@@ -1,0 +1,97 @@
+---
+
+## if mhn role was executed before, we want its handlers to be executed so service is ready to answer registration
+- meta: flush_handlers
+
+## some packages need multiverse like snmp-mibs-downloader
+- name: Ubuntu | ensure multiverse repo are enabled
+  apt_repository: repo="{{item}}"
+  register: multiverse_installed
+  with_items:
+    - 'deb http://archive.ubuntu.com/ubuntu {{ansible_distribution_release}} multiverse'
+    - 'deb-src http://archive.ubuntu.com/ubuntu {{ansible_distribution_release}} multiverse'
+    - 'deb http://archive.ubuntu.com/ubuntu {{ansible_distribution_release}}-updates multiverse'
+    - 'deb-src http://archive.ubuntu.com/ubuntu {{ansible_distribution_release}}-updates multiverse'
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ubuntu | update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+  when: multiverse_installed | changed
+
+## check no issue but not idempotent...
+#- command: 'dpkg --configure -a'
+
+- name: Install MHN Client - amun
+  include: deploy_amun.yml
+  when: amun is defined and amun
+  tags:
+    - amun
+
+## FIXME! centos7: 'DistributionNotFound: No distributions at all found for bacpypes (from conpot)'
+- name: Install MHN Client - conpot
+  include: deploy_conpot.yml
+  when: conpot is defined and conpot and ansible_distribution == 'Ubuntu'
+  tags:
+    - conpot
+
+- name: Install MHN Client - Dionaea
+  include: deploy_dionaea.yml
+  when: dionaea is defined and dionaea and (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'precise')
+  tags:
+    - dionaea
+
+#- debug: msg="Warning: Dionaea uses trusty only ppa and not compatible with others."
+#  when: dionaea is defined and dionaea and ansible_distribution_release != 'trusty'
+
+- name: Install MHN Client - elastichoney
+  include: deploy_elastichoney.yml
+  when: elastichoney is defined and elastichoney
+  tags:
+    - elastichoney
+
+## FIXME! NOK centos7/php54, trusty/php55: https://github.com/mushorg/glastopf/issues/266
+- name: Install MHN Client - glastopf
+  include: deploy_glastopf.yml
+  when: glastopf is defined and glastopf and ansible_distribution_release == 'xenial'
+  tags:
+    - glastopf
+
+- fail: msg="FATAL! Can't set up kippo and cowrie on same box as using same network port."
+  when: kippo is defined and kippo and cowrie is defined and cowrie
+
+- name: Install MHN Client - kippo
+  include: deploy_kippo.yml
+  when: kippo is defined and kippo
+  tags:
+    - kippo
+
+- name: Install MHN Client - cowrie
+  include: deploy_cowrie.yml
+  when: cowrie is defined and cowrie
+  tags:
+    - cowrie
+
+- name: Install MHN Client - p0f
+  include: deploy_p0f.yml
+  when: p0f is defined and p0f
+  tags:
+    - p0f
+
+- name: Install MHN Client - shockpot
+  include: deploy_shockpot.yml
+  when: shockpot is defined and shockpot
+  tags:
+    - shockpot
+
+- name: Install MHN Client - wordpot
+  include: deploy_wordpot.yml
+  when: wordpot is defined and wordpot
+  tags:
+    - wordpot
+
+- name: Install MHN Client - snort
+  include: deploy_snort.yml
+  when: snort is defined and snort
+  tags:
+    - snort
+

@@ -1,0 +1,37 @@
+---
+
+nginx_conf: /etc/nginx/conf.d
+supervisor_confdir: /etc/supervisord.d
+supervisor_ext: ini
+supervisor_service: supervisord
+php_dir:
+php_ini_files:
+  - /etc/{{ php_dir }}/apache2/php.ini
+
+mongodb_pkg:
+    - mongodb
+mhnclient_glastopf_pkg:
+    - git
+    - gcc-c++
+    - supervisor
+    - python-pip
+    - python-devel
+    - python-gevent
+    - libevent-devel
+    - "@Development tools"
+    - make
+    - python-chardet
+    - python-requests
+    - python-sqlalchemy
+    - python-lxml
+    - python-BeautifulSoup
+    - php
+    - php-devel
+    - lapack-devel
+    - gcc-gfortran
+    - mariadb-devel
+    - libxml2-devel
+    - libxslt-devel
+## FIXME! rpm missing?
+#    - python-openssl
+

@@ -1,0 +1,107 @@
+---
+- name: MHN Client | registration
+  include: registration.yml honeypot=kippo
+- set_fact:
+    deploy: /root/.registration_done-kippo
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install kippo dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - python-dev
+    - openssl
+    - python-openssl
+    - python-pyasn1
+    - python-twisted
+    - git
+    - python-pip
+    - supervisor
+    - authbind
+    - iptables-persistent
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: yum | Install kippo dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+    - python-devel
+    - openssl-devel
+    - python-pyasn1
+    - python-twisted-web
+    - iptables
+## FIXME! rpm missing
+#    - python-openssl
+#    - authbind
+#    - iptables-persistent
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+
+- name: Kippo | ensure no conflict with main ssh server = could break your config if using Vagrant
+  lineinfile:
+    "dest='/etc/ssh/sshd_config' regexp='^Port 22$' line='Port {{ real_ssh_port }}'"
+  notify:
+    - restart ssh
+  when: real_ssh_port is defined and real_ssh_port != 22
+
+- name: Ensure kippo user exists
+  user: name=kippo shell=/bin/bash group=users home=/home/kippo
+
+- stat: path=/opt/kippo
+  register: kippodir
+- name: git clone kippo
+  git:
+    repo=https://github.com/threatstream/kippo
+    dest=/opt/kippo
+  when: not kippodir.stat.exists
+
+- block:
+    - name: Determine if IPTables forwarding is going to work
+      shell: sysctl -w net.ipv4.conf.eth0.route_localnet=1 2>&1 >/dev/null
+      register: sysctlout
+    - set_fact:
+        iptable_support: true
+      changed_when: "sysctlout.rc != 0"
+    - name: "Add iptables forwarding to kippo (iptables_support {{ iptables_support }})"
+      template: src=rules.v4 dest=/etc/iptables/rules.v4 mode=0644
+      when: iptables_support is defined and iptables_support
+  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "kvm"))
+- name: create kippo configuration
+  template: src=kippo.cfg dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
+
+- name: Make directory owned by kippo user
+  file:
+    path: /opt/kippo
+    owner: kippo
+    group: users
+    recurse: yes
+
+- stat: path=/etc/authbind/byport/22
+  register: authbind
+- file: path=/etc/authbind/byport/22 state=touch mode=0777 owner=kippo
+  when: not authbind.stat.exists
+
+- name: create start script for kippo
+  template: src=start.sh dest=/opt/kippo/start.sh mode=0755
+
+- name: set kippo supervisor config
+  template: "src=kippo.conf dest={{ supervisor_confdir }}/kippo.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+
+

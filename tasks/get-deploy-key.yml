@@ -1,0 +1,15 @@
+
+- stat: path=/var/_mhn/mhn/server/config.py
+  register: mhnkeyfile
+
+- fail: msg="FATAL! missing mhnkeyfile /var/_mhn/mhn/server/config.py"
+  when: not mhnkeyfile.stat.exists
+
+- name: retrieve localhost deploy key
+  command: sed -n "s/^DEPLOY_KEY = '\(.*\)'/\1/p" /var/_mhn/mhn/server/config.py
+  register: deploykey
+  changed_when: false
+
+- set_fact:
+    deploy_key: "{{ deploykey.stdout }}"
+

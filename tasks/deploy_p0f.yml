@@ -1,0 +1,68 @@
+---
+- name: MHN Client | registration
+  include: registration.yml honeypot=p0f
+- set_fact:
+    deploy: /root/.registration_done-p0f
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install p0f dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - git
+    - supervisor
+    - libpcap-dev
+    - libjansson-dev
+    - gcc
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: yum | Install p0f dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - supervisor
+    - libpcap-devel
+    - jansson-devel
+    - "@Development tools"
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- stat: path=/opt/p0f
+  register: p0fdir
+- name: git clone p0f
+  git:
+    repo=https://github.com/threatstream/p0f.git
+    dest=/opt/p0f
+    version=origin/hpfeeds
+  when: not p0fdir.stat.exists
+- stat: path=/opt/p0f/p0f
+  register: p0finstall
+- name: build p0f
+  command: "{{ item }} chdir=/opt/p0f"
+  with_items:
+    - ./build.sh
+  when: not p0finstall.stat.exists
+
+- name: create p0f user
+  user: name="p0f-user" home=/var/empty/p0f shell=/bin/nologin createhome=no system=yes
+
+- file: path=/var/empty/p0f state=directory mode=0755
+
+- name: set p0f supervisor config
+  template: "src=p0f.conf dest={{ supervisor_confdir }}/p0f.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+

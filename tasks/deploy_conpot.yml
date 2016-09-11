@@ -1,0 +1,81 @@
+---
+- name: MHN Client | registration
+  include: registration.yml honeypot=conpot
+- set_fact:
+    deploy: /root/.registration_done-conpot
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install conpot dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - git
+    - libsmi2ldbl
+    - snmp-mibs-downloader
+    - python-pip
+    - python-dev
+    - libxml2-dev
+    - libxslt-dev
+    - libmysqlclient-dev
+    - zlib1g-dev
+    - python-virtualenv
+    - supervisor
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: yum | Install conpot dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+    - python-devel
+    - python-virtualenv
+    - libxml2-devel
+    - libxslt-devel
+    - mariadb-devel
+    - zlib-devel
+## FIXME! rpm not available
+#    - libsmi2ldbl
+#    - snmp-mibs-downloader
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+#- pip: name="{{ item }}"
+#  with_items:
+#    - distribute
+
+- name: Install conpot virtualenv - setuptools
+  pip: name=setuptools
+    virtualenv=/opt/conpot/env
+    version=26.1.1
+
+- name: Install conpot virtualenv
+  pip: name="{{ item }}"
+    virtualenv=/opt/conpot/env
+  with_items:
+#    - setuptools
+    - git+https://github.com/threatstream/hpfeeds.git#egg=hpfeeds-dev
+    - git+https://github.com/glastopf/conpot.git#egg=conpot-dev
+    - git+https://github.com/glastopf/modbus-tk.git#egg=modbus-tk==0.4
+
+- name: set conpot config
+  template: src=conpot.cfg dest=/opt/conpot/conpot.cfg mode=0644
+
+- name: set conpot supervisor config
+  copy: "src=conpot.conf dest={{ supervisor_confdir }}/conpot.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+
+

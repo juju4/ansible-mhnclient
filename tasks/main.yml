@@ -1,0 +1,33 @@
+---
+
+#- fail: msg="This role is only compatible with Ubuntu"
+#  when: ansible_distribution != 'Ubuntu'
+
+- name: Include version-specific variables for Ubuntu.
+  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - always
+- name: Include version-specific variables for RedHat
+  include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  tags:
+    - always
+
+- block:
+    - include: get-deploy-key.yml
+    - set_fact:
+## avoid conflict with mongodb repository and centos one.
+        mongodb_pkg: mongodb-org
+  when: server_url == "https://127.0.0.1:50443"
+  tags:
+    - always
+
+- include: get-deploy-key.yml
+  delegate_to: "{{ server_inventoryname }}"
+  when: server_url != "https://127.0.0.1:50443" and server_inventoryname is defined and server_inventoryname != ''
+  tags:
+    - always
+
+- include: client.yml
+

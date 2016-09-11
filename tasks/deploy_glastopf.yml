@@ -1,0 +1,102 @@
+---
+- name: MHN Client | registration
+  include: registration.yml honeypot=glastopf
+- set_fact:
+    deploy: /root/.registration_done-glastopf
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Install glastopf dependencies
+  package: name={{item}} state=present
+  with_items: "{{ mhnclient_glastopf_pkg + [ mongodb_pkg ] }}"
+
+### Note: may conflict w release for other modules: contop, snort
+#- stat: path=/usr/local/lib/python2.7/dist-packages/distribute-0.6.35-py2.7.egg
+#  register: distribute
+#- name: download distribute python
+#  get_url: url=https://pypi.python.org/packages/source/d/distribute/distribute-0.6.35.tar.gz dest=/tmp/distribute-0.6.35.tar.gz mode=0440
+#  when: not distribute.stat.exists
+#- name: extract distribute
+##  command: "tar xzf /tmp/distribute-0.6.35.tar.gz -C /tmp/"
+#  unarchive: src=/tmp/distribute-0.6.35.tar.gz dest=/tmp
+#  when: not distribute.stat.exists
+#- command: "python setup.py install chdir=/tmp/distribute-0.6.35"
+#  when: not distribute.stat.exists
+
+- name: install hpfeeds from github
+  pip: name="git+https://github.com/threatstream/hpfeeds.git#egg=hpfeeds-dev"
+
+- stat: path=/opt/BFR
+  register: bfrdir
+- name: git clone glastopf
+  git:
+    repo=https://github.com/mushorg/BFR.git
+    dest=/opt/BFR
+  when: not bfrdir.stat.exists
+- name: configure, build and install BFR
+  command: "{{ item }} chdir=/opt/BFR creates=/opt/BFR/modules/bfr.so"
+  with_items:
+    - phpize
+    - "./configure --enable-bfr"
+    - make
+    - "make install"
+
+- name: get bfr.so path
+  shell: "find /usr/lib/{{ php_dir }}/ -type f -name bfr.so | awk -F'/' '{print $5}'"
+  register: BFR_BUILD_OUTPUT
+  changed_when: false
+
+- name: ensure php bfr.so is enabled in php.ini
+  lineinfile: "dest={{ item }} regexp='^zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so' line='zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so'"
+  with_items: "{{ php_ini_files }}"
+
+- name: stop/disable apache2 service
+  service: name=apache2 state=stopped enabled=no
+  ignore_errors: true
+
+- name: install dependencies with pip
+  command: "pip install --upgrade greenlet"
+  with_items:
+    - greenlet
+    - pgen
+    - cython
+
+- name: uninstall setuptools
+  pip: name=setuptools state=absent
+
+#- name: install glastopf
+#  pip: name=glastopf
+- stat: path=/opt/glastopf
+  register: gtdir
+- name: git clone glastopf
+  git:
+    repo=https://github.com/mushorg/glastopf.git
+    dest=/opt/glastopf
+  when: not gtdir.stat.exists
+- name: build and install glastopf
+  command: "python setup.py install chdir=/opt/glastopf"
+
+- name: ensure good permissions on /opt/glastopf
+  file: path=/opt/glastopf state=directory mode=0755
+
+- name: set glastopf configuration
+  template: src=glastopf.cfg dest=/opt/glastopf/glastopf.cfg mode=0644
+
+- name: set glastopf supervisor config
+  template: "src=glastopf.conf dest={{ supervisor_confdir }}/glastopf.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+

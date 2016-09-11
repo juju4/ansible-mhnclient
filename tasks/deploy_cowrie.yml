@@ -1,0 +1,101 @@
+---
+
+- name: MHN Client | registration
+  include: registration.yml honeypot=cowrie
+- set_fact:
+    deploy: /root/.registration_done-cowrie
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install cowrie dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - python-dev
+    - openssl
+    - python-openssl
+    - python-pyasn1
+    - python-twisted
+    - python-crypto
+    - python-gmpy2
+    - python-zope.interface 
+    - git
+    - python-pip
+    - supervisor
+    - authbind
+    - iptables-persistent
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+
+- name: yum | Install cowrie dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+    - python-devel
+    - openssl-devel
+    - python-pyasn1
+    - python-twisted-web
+    - python-crypto
+    - python-gmpy2
+    - python-zope.interface 
+    - iptables
+## FIXME! rpm missing
+#    - python-openssl
+#    - authbind
+#    - iptables-persistent
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+
+- name: Cowrie | ensure no conflict with main ssh server = could break your config if using Vagrant
+  lineinfile:
+    "dest='/etc/ssh/sshd_config' regexp='^Port 22$' line='Port {{ real_ssh_port }}'"
+  notify:
+    - restart ssh
+  when: real_ssh_port is defined and real_ssh_port != 22
+
+- name: Ensure cowrie user exists
+  user: name=cowrie shell=/bin/bash group=users home=/home/cowrie
+
+- stat: path=/opt/cowrie
+  register: cowriedir
+- name: git clone cowrie
+  git:
+    repo=https://github.com/micheloosterhof/cowrie.git
+    dest=/opt/cowrie
+  when: not cowriedir.stat.exists
+
+- name: create cowrie configuration
+  template: src=cowrie.cfg dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
+
+- name: Make directory owned by cowrie user
+  file:
+    path: /opt/cowrie
+    owner: cowrie
+    group: users
+    recurse: yes
+
+- stat: path=/etc/authbind/byport/22
+  register: authbind
+- file: path=/etc/authbind/byport/22 state=touch mode=0770 owner=cowrie
+  when: not authbind.stat.exists
+
+- name: set cowrie supervisor config
+  template: "src=cowrie.conf dest={{ supervisor_confdir }}/cowrie.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+
+

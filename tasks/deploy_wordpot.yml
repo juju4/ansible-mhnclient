@@ -1,0 +1,72 @@
+---
+- name: MHN Client | registration
+#  get_url: "url={{ server_url }}/static/registration.txt dest=/root/registration.sh mode=0700"
+#- command: 'bash /root/registration.sh {{ server_url }} {{ deploy_key }} "wordpot"'
+#  include: registration.yml server_url={{ server_url }} deploy_key={{ deploy_key }} honeypot=wordpot
+  include: registration.yml honeypot=wordpot
+- set_fact:
+    deploy: /root/.registration_done-wordpot
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install wordpot dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+    - python-virtualenv
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: yum | Install wordpot dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+    - python-virtualenv
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- stat: path=/opt/wordpot
+  register: wordpotdir
+- name: git clone wordpot
+  git:
+    repo=https://github.com/threatstream/wordpot.git
+    dest=/opt/wordpot
+  when: not wordpotdir.stat.exists
+
+- name: Install wordpot virtualenv
+  pip: requirements=/opt/wordpot/requirements.txt
+    virtualenv=/opt/wordpot/env
+
+- name: update wordport config
+  lineinfile: "dest=/opt/wordpot/wordpot.conf regexp='{{ item.regexp }}' line='{{ item.line }}' backup=yes"
+  with_items:
+    - { regexp: '^HOST\s.*', line: "HOST = '0.0.0.0'" }
+    - { regexp: '^HPFEEDS_ENABLED = ', line: 'HPFEEDS_ENABLED = True' }
+    - { regexp: "^HPFEEDS_HOST = ", line: "HPFEEDS_HOST = '{{ HPF_HOST.stdout }}'" }
+    - { regexp: "^HPFEEDS_PORT = ", line: "HPFEEDS_PORT = '{{ HPF_PORT }}'" }
+    - { regexp: "^HPFEEDS_IDENT = ", line: "HPFEEDS_IDENT = '{{ HPF_IDENT.stdout }}'" }
+    - { regexp: "^HPFEEDS_SECRET = ", line: "HPFEEDS_SECRET = '{{ HPF_SECRET.stdout }}'" }
+    - { regexp: "^HPFEEDS_TOPIC = ", line: "HPFEEDS_TOPIC = 'wordpot.events'" }
+
+
+- name: MHN client | wordpot - supervisor config
+  copy: "src=wordpot.conf dest={{ supervisor_confdir }}/wordpot.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+
+
