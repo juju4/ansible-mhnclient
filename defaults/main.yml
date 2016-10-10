@@ -11,41 +11,40 @@ server_url: "https://10.254.254.100:50443"
 curl_arg: '-k --retry 3'
 
 ### Client configuration
-mhnmode: client
 ## Attention Kippo is moving real ssh port from 22 to 2222...
 ## Conflicts: over port 80: amun, glastopf, shockpot, wordpot
 ## Amun: low-interaction honeypot, like Nepenthes or Omnivora, designed to capture autonomous spreading malware in an automated fashion, 2012
-amun: false
+mhnclient_amun: false
 ## Conpot:  low interactive server side Industrial Control Systems honeypot, 2015
-conpot: false
+mhnclient_conpot: false
 ## Dionaea: low-interaction honeypot that captures attack payloads and malware, 2013. multiple ports (http/https disabled by default)
-dionaea: false
+mhnclient_dionaea: false
 ## A Simple Elasticsearch Honeypot, 2015
-elastichoney: false
+mhnclient_elastichoney: false
 ## mulates thousands of vulnerabilities to gather data from attacks targeting web applications, 2015
-glastopf: false
+mhnclient_glastopf: false
 ## medium interaction SSH honeypot designed to log brute force attacks and, most importantly, the entire shell interaction performed by the attacker, 2015. Alternative Cowrie (can't use both at the same time; Take care as affect ssh/ansible transport)
-kippo: false
-cowrie: false
-p0f: false
+mhnclient_kippo: false
+mhnclient_cowrie: false
+mhnclient_cowrie_telnet: false
+mhnclient_cowrie_telnet_port: 23
+mhnclient_p0f: false
 #TODOraspberry: false
 ## web app honeypot created by ThreatStream Labs, 2014
-shockpot: false
-snort: false
+mhnclient_shockpot: false
+mhnclient_snort: false
 #TODOsuricata: false
 ## Wordpress honeypot, 2014
-wordpot: false
+mhnclient_wordpot: false
 
 HONEYPOT_SSH_VERSION: "SSH-2.0-OpenSSH_5.5p1 Debian-4ubuntu5"
 
-## key seems to be unique per mhnserver host
-## FIXME! can be recovered inside server:/var/mhn/server/config.py
-#deploy_key:
 ## kippo settings
 ## FIXME! switch of ssh port is deadly for vagrant/ansible... how to accomodate
 #real_ssh_port: 2222
 real_ssh_port:
 kippo_ssh_port: 22
+cowrie_ssh_port: 22
 
 ## deploy_snort
 if_snort: eth0

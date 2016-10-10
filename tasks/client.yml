@@ -23,20 +23,20 @@
 
 - name: Install MHN Client - amun
   include: deploy_amun.yml
-  when: amun is defined and amun
+  when: mhnclient_amun is defined and mhnclient_amun
   tags:
     - amun
 
 ## FIXME! centos7: 'DistributionNotFound: No distributions at all found for bacpypes (from conpot)'
 - name: Install MHN Client - conpot
   include: deploy_conpot.yml
-  when: conpot is defined and conpot and ansible_distribution == 'Ubuntu'
+  when: mhnclient_conpot is defined and mhnclient_conpot and ansible_distribution == 'Ubuntu'
   tags:
     - conpot
 
 - name: Install MHN Client - Dionaea
   include: deploy_dionaea.yml
-  when: dionaea is defined and dionaea and (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'precise')
+  when: mhnclient_dionaea is defined and mhnclient_dionaea and (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'precise')
   tags:
     - dionaea
 
@@ -45,53 +45,53 @@
 
 - name: Install MHN Client - elastichoney
   include: deploy_elastichoney.yml
-  when: elastichoney is defined and elastichoney
+  when: mhnclient_elastichoney is defined and mhnclient_elastichoney
   tags:
     - elastichoney
 
 ## FIXME! NOK centos7/php54, trusty/php55: https://github.com/mushorg/glastopf/issues/266
 - name: Install MHN Client - glastopf
   include: deploy_glastopf.yml
-  when: glastopf is defined and glastopf and ansible_distribution_release == 'xenial'
+  when: mhnclient_glastopf is defined and mhnclient_glastopf and ansible_distribution_release == 'xenial'
   tags:
     - glastopf
 
 - fail: msg="FATAL! Can't set up kippo and cowrie on same box as using same network port."
-  when: kippo is defined and kippo and cowrie is defined and cowrie
+  when: mhnclient_kippo is defined and mhnclient_kippo and mhnclient_cowrie is defined and mhnclient_cowrie
 
 - name: Install MHN Client - kippo
   include: deploy_kippo.yml
-  when: kippo is defined and kippo
+  when: mhnclient_kippo is defined and mhnclient_kippo
   tags:
     - kippo
 
 - name: Install MHN Client - cowrie
   include: deploy_cowrie.yml
-  when: cowrie is defined and cowrie
+  when: mhnclient_cowrie is defined and mhnclient_cowrie
   tags:
     - cowrie
 
 - name: Install MHN Client - p0f
   include: deploy_p0f.yml
-  when: p0f is defined and p0f
+  when: mhnclient_p0f is defined and mhnclient_p0f
   tags:
     - p0f
 
 - name: Install MHN Client - shockpot
   include: deploy_shockpot.yml
-  when: shockpot is defined and shockpot
+  when: mhnclient_shockpot is defined and mhnclient_shockpot
   tags:
     - shockpot
 
 - name: Install MHN Client - wordpot
   include: deploy_wordpot.yml
-  when: wordpot is defined and wordpot
+  when: mhnclient_wordpot is defined and mhnclient_wordpot
   tags:
     - wordpot
 
 - name: Install MHN Client - snort
   include: deploy_snort.yml
-  when: snort is defined and snort
+  when: mhnclient_snort is defined and mhnclient_snort
   tags:
     - snort
 

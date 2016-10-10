@@ -4,7 +4,7 @@
 mkdir -p /opt/mhn/rules
 rm -f /opt/mhn/rules/mhn.rules.tmp
 echo "[`date`] Updating snort signatures ..."
-wget --no-check-certificate {{ server_url }}/static/mhn.rules -O /opt/mhn/rules/mhn.rules.tmp && \
+wget -q --no-check-certificate {{ server_url }}/static/mhn.rules -O /opt/mhn/rules/mhn.rules.tmp && \
     mv /opt/mhn/rules/mhn.rules.tmp /opt/mhn/rules/mhn.rules && \
     (supervisorctl update ; supervisorctl restart snort ) && \
     echo "[`date`] Successfully updated snort signatures" && \

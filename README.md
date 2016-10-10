@@ -32,11 +32,8 @@ For example
       - mhn
 - hosts: mhnclient
   roles:
-    - { role: mhnclient, dionaea: true, glastopf: true, wordpot: true }
+    - { role: mhnclient, mhnclient_dionaea: true, mhnclient_glastopf: true, mhnclient_wordpot: true }
 ```
-
-Once your server is configured, you will need to define additional vars (server_url, deploy_key, ...) before deploying clients.
-deploy_key can be retrieved either automatically inside ansible role, either from Web UI, either from /var/_mhn/mhn/server/config.py.
 
 If you use kippo, after first execution, you must change ssh port in your inventory file (manual inventory or vagrant .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory) or Vagrantfile (config.ssh.port) else you will have no connection. Eventually, you can override it from ansible command line (-e).
 
@@ -76,6 +73,8 @@ re-executing role is usually sufficient (use tags to avoid doing all the playboo
 just restart service manually.
 not sure why it happens as a temporization is already included.
 
+* cowrie telnet support is pending because of hpfeeds to report to mhn server
+https://groups.google.com/forum/#!topic/modern-honey-network/jPE38VZmmho
 
 ## FAQ
 

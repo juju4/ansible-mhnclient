@@ -28,6 +28,7 @@
     - python-pyasn1
     - python-twisted
     - git
+    - ssh
     - python-pip
     - supervisor
     - authbind
@@ -38,6 +39,7 @@
   yum: name={{item}} state=present update_cache=yes
   with_items:
     - git
+    - openssh-server
     - supervisor
     - python-pip
     - python-devel

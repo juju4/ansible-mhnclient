@@ -32,6 +32,7 @@
     - python-gmpy2
     - python-zope.interface 
     - git
+    - ssh
     - python-pip
     - supervisor
     - authbind
@@ -43,6 +44,7 @@
   yum: name={{item}} state=present update_cache=yes
   with_items:
     - git
+    - openssh-server
     - supervisor
     - python-pip
     - python-devel
@@ -79,7 +81,7 @@
   when: not cowriedir.stat.exists
 
 - name: create cowrie configuration
-  template: src=cowrie.cfg dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
+  template: src=cowrie.cfg.j2 dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
 
 - name: Make directory owned by cowrie user
   file:
