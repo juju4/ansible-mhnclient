@@ -37,6 +37,9 @@
     - supervisor
     - authbind
     - iptables-persistent
+## necessary for pip update
+    - libmpfr-dev
+    - libmpc-dev
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 

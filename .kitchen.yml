@@ -4,9 +4,8 @@ driver:
 ## FIXME! httpd/centos7/capability issue on lxc + amun
 ## https://github.com/lxc/lxd/issues/1245
 ## https://bugzilla.redhat.com/show_bug.cgi?id=1012952
-## no drop of setfcap = 'set lxc.cap.drop = audit_control audit_write mac_admin mac_override mknod setpcap sys_admin sys_boot sys_module sys_nice sys_pacct sys_rawio sys_resource sys_time sys_tty_config'
-  config:
-    security.privileged: true
+#  config:
+#    security.privileged: true
 
 transport:
   name: sftp
@@ -31,6 +30,13 @@ platforms:
   - name: ubuntu-14.04
 #  - name: ubuntu-12.04
   - name: centos-7
+## httpd/centos7/capability issue on lxc
+## https://github.com/lxc/lxd/issues/1245	= only choice is privileged
+## https://bugzilla.redhat.com/show_bug.cgi?id=1012952
+    driver:
+      config:
+        security.privileged: true
+#  - name: centos-6
 #  - name: centos-6
 #  - name: alpine-3.4
 

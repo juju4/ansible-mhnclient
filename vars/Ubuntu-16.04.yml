@@ -37,4 +37,6 @@ mhnclient_glastopf_pkg:
     - libxslt-dev
     - supervisor
     - python-pip
+## to allow pip update
+    - libmpfr-dev
 

@@ -17,6 +17,6 @@
 #    - suricata: true
     - wordpot: true
   roles:
-    - mhn
-    - mhnclient
+    - juju4.mhn
+    - juju4.mhnclient
 
