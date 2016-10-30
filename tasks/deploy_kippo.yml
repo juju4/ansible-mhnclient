@@ -26,10 +26,11 @@
     - openssl
     - python-openssl
     - python-pyasn1
-    - python-twisted
+#    - python-twisted
     - git
     - ssh
     - python-pip
+    - python-virtualenv
     - supervisor
     - authbind
     - iptables-persistent
@@ -42,10 +43,11 @@
     - openssh-server
     - supervisor
     - python-pip
+    - python-virtualenv
     - python-devel
     - openssl-devel
     - python-pyasn1
-    - python-twisted-web
+#    - python-twisted-web
     - iptables
 ## FIXME! rpm missing
 #    - python-openssl
@@ -71,6 +73,15 @@
     repo=https://github.com/threatstream/kippo
     dest=/opt/kippo
   when: not kippodir.stat.exists
+
+## xenial has twisted 16.0
+## https://github.com/desaster/kippo/issues/202
+- name: install kippo dependencies in dedicated virtualenv
+  pip: name={{ item.n }} version={{ item.v }} virtualenv=/home/kippo/env-kippo virtualenv_site_packages=yes umask=0022
+  with_items:
+    - { n: twisted, v: 15.1.0 }
+    - { n: pycrypto, v: 2.6.1 }
+    - { n: pyasn1, v: 0.1.9 }
 
 - block:
     - name: Determine if IPTables forwarding is going to work

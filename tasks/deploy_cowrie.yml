@@ -37,6 +37,7 @@
     - supervisor
     - authbind
     - iptables-persistent
+    - python-configparser
 ## necessary for pip update
     - libmpfr-dev
     - libmpc-dev
@@ -94,9 +95,15 @@
     recurse: yes
 
 - stat: path=/etc/authbind/byport/22
-  register: authbind
+  register: authbind22
 - file: path=/etc/authbind/byport/22 state=touch mode=0770 owner=cowrie
-  when: not authbind.stat.exists
+  when: not authbind22.stat.exists
+- block:
+    - stat: path=/etc/authbind/byport/23
+      register: authbind23
+    - file: path=/etc/authbind/byport/23 state=touch mode=0770 owner=cowrie
+      when: not authbind23.stat.exists
+  when: mhnclient_cowrie_telnet is defined and mhnclient_cowrie_telnet
 
 - name: set cowrie supervisor config
   template: "src=cowrie.conf dest={{ supervisor_confdir }}/cowrie.{{ supervisor_ext }} mode=0644"

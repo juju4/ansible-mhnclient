@@ -66,3 +66,8 @@
   notify:
     - supervisor update
 
+## https://groups.google.com/forum/#!msg/modern-honey-network/vY0H7cj2vlE/uA0BlrpCBAAJ
+- name: add extra filters to P0f
+  replace: dest=/opt/p0f/p0f_wrapper.sh regexp='^FILTER="!(src host ${MY_ADDRESS})"' replace='FILTER="(not src host ${MY_ADDRESS}) and {{ mhnclient_p0f_filters }}"' backup=yes
+  when: mhnclient_p0f_filters is defined and mhnclient_p0f_filters != ''
+

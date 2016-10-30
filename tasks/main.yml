@@ -31,3 +31,6 @@
 
 - include: client.yml
 
+- name: ensure supervisor service is enabled
+  service: name={{ supervisor_service }} enabled=yes
+

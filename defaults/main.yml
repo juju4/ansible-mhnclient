@@ -27,8 +27,10 @@ mhnclient_glastopf: false
 mhnclient_kippo: false
 mhnclient_cowrie: false
 mhnclient_cowrie_telnet: false
-mhnclient_cowrie_telnet_port: 23
+## Remember, cowrie is not root and cant bind 23 directly
+mhnclient_cowrie_telnet_port: 2223
 mhnclient_p0f: false
+#mhnclient_p0f_filters: '(not host X.X.X.X)'
 #TODOraspberry: false
 ## web app honeypot created by ThreatStream Labs, 2014
 mhnclient_shockpot: false
