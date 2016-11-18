@@ -58,10 +58,10 @@
 
 - name: Kippo | ensure no conflict with main ssh server = could break your config if using Vagrant
   lineinfile:
-    "dest='/etc/ssh/sshd_config' regexp='^Port 22$' line='Port {{ real_ssh_port }}'"
+    "dest='/etc/ssh/sshd_config' regexp='^Port .*' line='Port {{ real_ssh_port }}' backup=yes"
   notify:
     - restart ssh
-  when: real_ssh_port is defined and real_ssh_port != 22
+  when: real_ssh_port is defined and real_ssh_port != '' and real_ssh_port != 22
 
 - name: Ensure kippo user exists
   user: name=kippo shell=/bin/bash group=users home=/home/kippo
@@ -93,7 +93,7 @@
     - name: "Add iptables forwarding to kippo (iptables_support {{ iptables_support }})"
       template: src=rules.v4 dest=/etc/iptables/rules.v4 mode=0644
       when: iptables_support is defined and iptables_support
-  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "kvm"))
+  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "kvm")) and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 - name: create kippo configuration
   template: src=kippo.cfg dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
 
@@ -107,7 +107,7 @@
 - stat: path=/etc/authbind/byport/22
   register: authbind
 - file: path=/etc/authbind/byport/22 state=touch mode=0777 owner=kippo
-  when: not authbind.stat.exists
+  when: not authbind.stat.exists and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 
 - name: create start script for kippo
   template: src=start.sh dest=/opt/kippo/start.sh mode=0755

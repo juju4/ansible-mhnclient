@@ -29,13 +29,14 @@ platforms:
   - name: ubuntu-16.04
   - name: ubuntu-14.04
 #  - name: ubuntu-12.04
-  - name: centos-7
+## issue w mhn server part
+#  - name: centos-7
 ## httpd/centos7/capability issue on lxc
 ## https://github.com/lxc/lxd/issues/1245	= only choice is privileged
 ## https://bugzilla.redhat.com/show_bug.cgi?id=1012952
-    driver:
-      config:
-        security.privileged: true
+#    driver:
+#      config:
+#        security.privileged: true
 #  - name: centos-6
 #  - name: centos-6
 #  - name: alpine-3.4

@@ -50,10 +50,11 @@
     virtualenv=/opt/shockpot/env
 
 - name: set shockpot config
-  template: src=shockpot.conf dest=/opt/shockpot/shockpot.conf mode=0644
+  template: src=shockpot.conf dest=/opt/shockpot/shockpot.conf mode=0644 backup=yes
 
-- name: set shockpot supervisor config
+- name: MHN client | shockpot supervisor config
   template: "src=shockpot.conf dest={{ supervisor_confdir }}/shockpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
+
 

@@ -1,0 +1,41 @@
+# ----------------------
+# Honeypot configuration
+# ----------------------
+
+HOST = '0.0.0.0'
+PORT        = '{{ mhnclient_wordpot_port }}'                  # Port
+THEME       = 'twentyeleven'        # Theme name in use
+SERVER      = 'Apache/2.2.22 (Ubuntu)'   # Custom server header
+
+# -----------------------
+# Wordpress configuration
+# -----------------------
+
+BLOGTITLE   = 'Random Ramblings'    # Title of the blog
+VERSION     = '2.8'                 # Version to mimick
+AUTHORS     = ['admin']             # Authors list
+
+# ------------------------------------
+# Wordpress installed plugins & themes
+# ------------------------------------
+# By default every probe against plugins/themes is allowed
+# as long as PLUGINS and THEMES options are commented.
+# You can allow probes to certain elements:
+#
+#   PLUGINS = ['plugin1', 'plugin2']
+#
+# You can disallow every probes with an empty list:
+#
+#   PLUGINS = []
+#
+
+#PLUGINS     = []                    # Installed plugins list
+#THEMES      = []                    # Installed themes list
+
+HPFEEDS_ENABLED = True
+HPFEEDS_HOST = '{{ HPF_HOST.stdout }}'
+HPFEEDS_PORT = '{{ HPF_PORT }}'
+HPFEEDS_IDENT = '{{ HPF_IDENT.stdout }}'
+HPFEEDS_SECRET = '{{ HPF_SECRET.stdout }}'
+HPFEEDS_TOPIC = 'wordpot.events'
+

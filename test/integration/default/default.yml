@@ -4,19 +4,28 @@
   vars:
     - server_url: "https://127.0.0.1:50443"
     - mhnclient_amun: true
-## conpot use includes port 80 which conflicts with mhn server
-#    - mhnclient_conpot: true
+    - mhnclient_conpot: true
+    - mhnclient_conpot_http_port: 8889
     - mhnclient_dionaea: true
     - mhnclient_elastichoney: true
     - mhnclient_glastopf: true
-## as kippo is changing ssh port used by ansible, automated test is a bit tricky...
-#    - mhnclient_kippo: true
+## to avoid conflict
+    - mhnclient_glastopf_port: 8888
+## as kippo is changing ssh port used by ansible, automated test is a bit tricky... = not using regular port
+    - mhnclient_kippo: true
+    - mhnclient_kippo_ssh_port: 2220
+    - mhnclient_kippo_22redirect: false
+    - mhnclient_cowrie: true
+    - mhnclient_cowrie_ssh_port: 2221
+    - mhnclient_cowrie_22redirect: false
     - mhnclient_p0f: true
 #    - raspberry: true
     - mhnclient_shockpot: true
+    - mhnclient_shockpot_port: 8890
     - mhnclient_snort: true
 #    - suricata: true
     - mhnclient_wordpot: true
+    - mhnclient_wordpot_port: 8891
   roles:
 ## golang for elastichoney
     - juju4.golang

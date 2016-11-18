@@ -1,8 +1,5 @@
 ---
 - name: MHN Client | registration
-#  get_url: "url={{ server_url }}/static/registration.txt dest=/root/registration.sh mode=0700"
-#- command: 'bash /root/registration.sh {{ server_url }} {{ deploy_key }} "wordpot"'
-#  include: registration.yml server_url={{ server_url }} deploy_key={{ deploy_key }} honeypot=wordpot
   include: registration.yml honeypot=wordpot
 - set_fact:
     deploy: /root/.registration_done-wordpot
@@ -52,19 +49,11 @@
   pip: requirements=/opt/wordpot/requirements.txt
     virtualenv=/opt/wordpot/env
 
-- name: update wordport config
-  lineinfile: "dest=/opt/wordpot/wordpot.conf regexp='{{ item.regexp }}' line='{{ item.line }}' backup=yes"
-  with_items:
-    - { regexp: '^HOST\s.*', line: "HOST = '0.0.0.0'" }
-    - { regexp: '^HPFEEDS_ENABLED = ', line: 'HPFEEDS_ENABLED = True' }
-    - { regexp: "^HPFEEDS_HOST = ", line: "HPFEEDS_HOST = '{{ HPF_HOST.stdout }}'" }
-    - { regexp: "^HPFEEDS_PORT = ", line: "HPFEEDS_PORT = '{{ HPF_PORT }}'" }
-    - { regexp: "^HPFEEDS_IDENT = ", line: "HPFEEDS_IDENT = '{{ HPF_IDENT.stdout }}'" }
-    - { regexp: "^HPFEEDS_SECRET = ", line: "HPFEEDS_SECRET = '{{ HPF_SECRET.stdout }}'" }
-    - { regexp: "^HPFEEDS_TOPIC = ", line: "HPFEEDS_TOPIC = 'wordpot.events'" }
+- name: set wordpot config
+  template: src=wordpot.conf.j2 dest=/opt/wordpot/wordpot.conf mode=0644 backup=yes
 
 
-- name: MHN client | wordpot - supervisor config
+- name: MHN client | wordpot supervisor config
   copy: "src=wordpot.conf dest={{ supervisor_confdir }}/wordpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update

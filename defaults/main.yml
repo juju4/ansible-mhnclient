@@ -12,20 +12,24 @@ curl_arg: '-k --retry 3'
 
 ### Client configuration
 ## Attention Kippo is moving real ssh port from 22 to 2222...
-## Conflicts: over port 80: amun, glastopf, shockpot, wordpot
+## Conflicts: over port 80: amun(+8080), glastopf, shockpot, wordpot
 ## Amun: low-interaction honeypot, like Nepenthes or Omnivora, designed to capture autonomous spreading malware in an automated fashion, 2012
 mhnclient_amun: false
 ## Conpot:  low interactive server side Industrial Control Systems honeypot, 2015
 mhnclient_conpot: false
+mhnclient_conpot_http_port: 80
 ## Dionaea: low-interaction honeypot that captures attack payloads and malware, 2013. multiple ports (http/https disabled by default)
 mhnclient_dionaea: false
 ## A Simple Elasticsearch Honeypot, 2015
 mhnclient_elastichoney: false
-## mulates thousands of vulnerabilities to gather data from attacks targeting web applications, 2015
+## emulates thousands of vulnerabilities to gather data from attacks targeting web applications, 2015
 mhnclient_glastopf: false
+mhnclient_glastopf_port: 80
 ## medium interaction SSH honeypot designed to log brute force attacks and, most importantly, the entire shell interaction performed by the attacker, 2015. Alternative Cowrie (can't use both at the same time; Take care as affect ssh/ansible transport)
 mhnclient_kippo: false
+mhnclient_kippo_22redirect: true
 mhnclient_cowrie: false
+mhnclient_cowrie_22redirect: true
 mhnclient_cowrie_telnet: false
 ## Remember, cowrie is not root and cant bind 23 directly
 mhnclient_cowrie_telnet_port: 2223
@@ -34,19 +38,22 @@ mhnclient_p0f: false
 #TODOraspberry: false
 ## web app honeypot created by ThreatStream Labs, 2014
 mhnclient_shockpot: false
+mhnclient_shockpot_port: 80
+mhnclient_shockpot_serverheaders: 'Apache/2.0.55 (Debian) PHP/5.1.2-1+b1 mod_ssl/2.0.55 OpenSSL/0.9.8b'
 mhnclient_snort: false
 #TODOsuricata: false
 ## Wordpress honeypot, 2014
 mhnclient_wordpot: false
+mhnclient_wordpot_port: 80
 
 HONEYPOT_SSH_VERSION: "SSH-2.0-OpenSSH_5.5p1 Debian-4ubuntu5"
 
 ## kippo settings
 ## FIXME! switch of ssh port is deadly for vagrant/ansible... how to accomodate
 #real_ssh_port: 2222
-real_ssh_port:
-kippo_ssh_port: 22
-cowrie_ssh_port: 22
+real_ssh_port: ''
+mhnclient_kippo_ssh_port: 22
+mhnclient_cowrie_ssh_port: 22
 
 ## deploy_snort
 if_snort: eth0

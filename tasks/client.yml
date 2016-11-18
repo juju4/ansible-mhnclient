@@ -56,8 +56,8 @@
   tags:
     - glastopf
 
-- fail: msg="FATAL! Can't set up kippo and cowrie on same box as using same network port."
-  when: mhnclient_kippo is defined and mhnclient_kippo and mhnclient_cowrie is defined and mhnclient_cowrie
+- fail: msg="FATAL! Can't set up kippo and cowrie on same box as using same network port (port {{ mhnclient_kippo_ssh_port }})."
+  when: mhnclient_kippo is defined and mhnclient_kippo and mhnclient_cowrie is defined and mhnclient_cowrie and mhnclient_kippo_ssh_port == mhnclient_cowrie_ssh_port
 
 - name: Install MHN Client - kippo
   include: deploy_kippo.yml

@@ -71,7 +71,7 @@
     "dest='/etc/ssh/sshd_config' regexp='^Port 22$' line='Port {{ real_ssh_port }}'"
   notify:
     - restart ssh
-  when: real_ssh_port is defined and real_ssh_port != 22
+  when: real_ssh_port is defined and real_ssh_port != '' and real_ssh_port != 22
 
 - name: Ensure cowrie user exists
   user: name=cowrie shell=/bin/bash group=users home=/home/cowrie
@@ -97,7 +97,7 @@
 - stat: path=/etc/authbind/byport/22
   register: authbind22
 - file: path=/etc/authbind/byport/22 state=touch mode=0770 owner=cowrie
-  when: not authbind22.stat.exists
+  when: not authbind22.stat.exists and mhnclient_cowrie_22redirect is defined and mhnclient_cowrie_22redirect
 - block:
     - stat: path=/etc/authbind/byport/23
       register: authbind23

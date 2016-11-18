@@ -188,6 +188,7 @@
     - { regexp: '^ipvar HOME_NET .*', replace: "ipvar HOME_NET {{ HOME_NET }}" }
   notify:
     - supervisor update
+  when: HOME_NET is defined
 
 - name: MHN client | snort - configuration (2)
   lineinfile: "dest=/opt/snort/etc/snort.conf regexp='{{ item.regexp }}' line='{{ item.line }}' insertafter='^# hpfeeds'"
