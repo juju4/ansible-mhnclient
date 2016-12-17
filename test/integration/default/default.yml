@@ -26,6 +26,9 @@
 #    - suricata: true
     - mhnclient_wordpot: true
     - mhnclient_wordpot_port: 8891
+    - mhnclient_mtpot: true
+    - mhnclient_mtpot_port: 2323
+    - mhnclient_testing: true
   roles:
 ## golang for elastichoney
     - juju4.golang

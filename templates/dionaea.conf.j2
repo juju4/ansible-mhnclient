@@ -1,0 +1,15 @@
+## /etc/supervisor/conf.d/dionaea.conf
+[program:dionaea]
+{% if deploy == '/root/.registration_done-raspberrydionaea' %}
+command=/opt/dionaea/bin/dionaea -c /opt/dionaea/etc/dionaea/dionaea.conf -w /opt/dionaea/var/dionaea -u nobody -g nogroup
+directory=/opt/dionaea/var/dionaea
+{% else %}
+command=dionaea -c /etc/dionaea/dionaea.conf -w /var/dionaea -u nobody -g nogroup
+directory=/var/dionaea
+{% endif %}
+stdout_logfile=/var/log/supervisor/dionaea.out
+autostart=true
+autorestart=true
+redirect_stderr=true
+stopsignal=QUIT
+

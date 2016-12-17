@@ -17,9 +17,11 @@ curl_arg: '-k --retry 3'
 mhnclient_amun: false
 ## Conpot:  low interactive server side Industrial Control Systems honeypot, 2015
 mhnclient_conpot: false
+mhnclient_conpot_template: 'default'
 mhnclient_conpot_http_port: 80
-## Dionaea: low-interaction honeypot that captures attack payloads and malware, 2013. multiple ports (http/https disabled by default)
+## Dionaea: low-interaction honeypot that captures attack payloads and malware, 2013. multiple ports (http/https disabled by default). raspbian variant.
 mhnclient_dionaea: false
+mhnclient_raspberrypi: false
 ## A Simple Elasticsearch Honeypot, 2015
 mhnclient_elastichoney: false
 ## emulates thousands of vulnerabilities to gather data from attacks targeting web applications, 2015
@@ -27,8 +29,11 @@ mhnclient_glastopf: false
 mhnclient_glastopf_port: 80
 ## medium interaction SSH honeypot designed to log brute force attacks and, most importantly, the entire shell interaction performed by the attacker, 2015. Alternative Cowrie (can't use both at the same time; Take care as affect ssh/ansible transport)
 mhnclient_kippo: false
+mhnclient_kippo_version: HEAD
 mhnclient_kippo_22redirect: true
 mhnclient_cowrie: false
+mhnclient_cowrie_version: HEAD
+mhnclient_cowrie_hostname: 'server'
 mhnclient_cowrie_22redirect: true
 mhnclient_cowrie_telnet: false
 ## Remember, cowrie is not root and cant bind 23 directly
@@ -48,6 +53,15 @@ mhnclient_wordpot_port: 80
 
 HONEYPOT_SSH_VERSION: "SSH-2.0-OpenSSH_5.5p1 Debian-4ubuntu5"
 
+
+## Mirai honeypot by Cymmetria, not officially supported by MHN/no hpfeeds support
+mhnclient_mtpot: false
+mhnclient_mtpot_port: 23
+mhnclient_mtpot_syslog_address: 127.0.0.1
+mhnclient_mtpot_syslog_port: 5555
+mhnclient_mtpot_syslog_protocol: UDP
+
+
 ## kippo settings
 ## FIXME! switch of ssh port is deadly for vagrant/ansible... how to accomodate
 #real_ssh_port: 2222
@@ -61,4 +75,6 @@ if_snort: eth0
 backupdir: /var/_backup
 scriptsdir: /usr/local/scripts
 noreboot: true
+
+mhnclient_testing: false
 

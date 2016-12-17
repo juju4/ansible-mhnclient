@@ -34,7 +34,7 @@
     - supervisor
     - authbind
     - iptables-persistent
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install kippo dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -72,6 +72,7 @@
   git:
     repo=https://github.com/threatstream/kippo
     dest=/opt/kippo
+    version="{{ mhnclient_kippo_version }}"
   when: not kippodir.stat.exists
 
 ## xenial has twisted 16.0
@@ -91,11 +92,11 @@
         iptable_support: true
       changed_when: "sysctlout.rc != 0"
     - name: "Add iptables forwarding to kippo (iptables_support {{ iptables_support }})"
-      template: src=rules.v4 dest=/etc/iptables/rules.v4 mode=0644
+      template: src=rules.v4.j2 dest=/etc/iptables/rules.v4 mode=0644
       when: iptables_support is defined and iptables_support
   when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "kvm")) and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 - name: create kippo configuration
-  template: src=kippo.cfg dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
+  template: src=kippo.cfg.j2 dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
 
 - name: Make directory owned by kippo user
   file:
@@ -110,10 +111,12 @@
   when: not authbind.stat.exists and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 
 - name: create start script for kippo
-  template: src=start.sh dest=/opt/kippo/start.sh mode=0755
+  template: src=start.sh.j2 dest=/opt/kippo/start.sh mode=0755
+  notify:
+    - supervisor update
 
 - name: set kippo supervisor config
-  template: "src=kippo.conf dest={{ supervisor_confdir }}/kippo.{{ supervisor_ext }} mode=0644"
+  template: "src=kippo.conf.j2 dest={{ supervisor_confdir }}/kippo.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 

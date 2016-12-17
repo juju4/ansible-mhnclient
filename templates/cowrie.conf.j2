@@ -1,7 +1,8 @@
 ## /etc/supervisor/conf.d/cowrie.conf
 
 [program:cowrie]
-command=authbind --deep twistd -l /opt/cowrie/log/cowrie.log --umask 0077 --pidfile cowrie.pid --nodaemon cowrie
+#command=authbind --deep twistd -l /opt/cowrie/log/cowrie.log --umask 0077 --pidfile cowrie.pid --nodaemon cowrie
+command=authbind --deep /opt/cowrie/env-cowrie/bin/twistd -l /opt/cowrie/log/cowrie.log --umask 0077 --pidfile cowrie.pid --nodaemon cowrie
 directory=/opt/cowrie
 stdout_logfile=/var/log/supervisor/cowrie.out
 #stderr_logfile=/var/log/supervisor/cowrie.err

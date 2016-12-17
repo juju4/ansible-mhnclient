@@ -26,7 +26,7 @@
     - supervisor
 ## use golang role
 #    - golang
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install elastichoney dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -58,7 +58,9 @@
   when: not stgo.stat.exists
 
 - name: set up elastichoney json config
-  template: src=elastichoney-config.json dest=/opt/elastichoney/config.json mode=0644 backup=yes
+  template: src=elastichoney-config.json.j2 dest=/opt/elastichoney/config.json mode=0644 backup=yes
+  notify:
+    - supervisor update
 
 - name: set elastichoney supervisor config
   copy: "src=elastichoney.conf dest={{ supervisor_confdir }}/elastichoney.{{ supervisor_ext }} mode=0644"

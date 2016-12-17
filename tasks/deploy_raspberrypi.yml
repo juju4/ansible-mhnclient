@@ -1,0 +1,141 @@
+---
+
+- fail: msg="FATAL! Currently only non-signed debain wheezy repository."
+
+- name: MHN Client | registration
+  include: registration.yml honeypot=raspberrydionaea
+- set_fact:
+    deploy: /root/.registration_done-raspberrydionaea
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- block:
+    - name: apt | install raspbian repository for dionaea
+      apt_repository:
+## FIXME! E:The repository 'http://packages.s7t.de/raspbian wheezy Release' is not signed.
+#        repo: "deb http://packages.s7t.de/raspbian {{ ansible_distribution_release | lower }} main"
+## 2016/12 repo is wheezy only
+        repo: "deb http://packages.s7t.de/raspbian wheezy main"
+        state: present
+      register: newrepo
+      when: ansible_os_family == 'Debian'
+    - name: apt kali | install raspbian repository for dionaea
+      apt_repository:
+## always debian testing
+#        repo: "deb http://packages.s7t.de/raspbian testing main"
+        repo: "deb http://packages.s7t.de/raspbian wheezy main"
+        state: present
+      register: newrepo2
+      when: ansible_distribution == 'Kali'
+    - name: apt | update cache
+      apt: update_cache=yes
+      when: (newrepo is defined and newrepo.changed) or (newrepo2 is defined and newrepo2.changed)
+    - name: apt | Install dionaea dependencies
+      apt: name={{item}} state=present force=yes
+      with_items:
+        - python-software-properties
+        - software-properties-common
+        - git
+        - supervisor
+        - patch
+        - libglib2.0-dev
+        - libssl-dev
+        - libcurl4-openssl-dev
+        - libreadline-dev
+        - libsqlite3-dev
+        - libtool
+        - automake
+        - autoconf
+        - build-essential
+        - subversion
+        - git-core
+        - flex
+        - bison
+        - pkg-config
+        - libnl-3-dev
+        - libnl-genl-3-dev
+        - libnl-nf-3-dev
+        - libnl-route-3-dev
+        - liblcfg
+        - libemu
+        - libev
+        - dionaea-python
+        - dionaea-cython
+        - libpcap
+        - udns
+        - dionaea
+        - liblcfg
+
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
+
+- name: check if dionaea config file exists
+  stat: path=/opt/dionaea/etc/dionaea/dionaea.conf
+  register: dionaeaconf
+- name: copy sample dionaea config
+  copy: src=/opt/dionaea/etc/dionaea/dionaea.conf.dist dest=/opt/dionaea/etc/dionaea/dionaea.conf mode=0644 remote_src=yes
+  when: not dionaeaconf.stat.exists
+
+- name: ensure permissions of dionaea tree
+  file: dest=/opt/dionaea/var/dionaea owner=nobody group=nogroup recurse=yes
+
+- name: copy dionaea hpfeeds patch
+  template: src=dionaea.hpfeeds.patch.j2 dest=/tmp/dionaea.hpfeeds.patch mode=0644
+
+- name: add hpfeeds script in dionaea tree
+  copy: src=hpfeeds.py dest=/usr/lib/dionaea/python/dionaea/hpfeeds.py mode=0755
+
+## remote_src needed else doing from master: fatal: [node1] => input file not found at /tmp/dionaea.hpfeeds.patch or /tmp/dionaea.hpfeeds.patch
+- name: apply patch dionaea.hpfeeds.patch
+  patch: >
+    src=/tmp/dionaea.hpfeeds.patch
+    basedir=/
+    strip=0
+    remote_src=True
+    backup=yes
+
+- name: check permissions for dionaea tree
+  file: "path={{ item }} state=directory mode=0755 owner=nobody group=nogroup"
+  with_items:
+    - /opt/dionaea/var/dionaea/wwwroot
+    - /opt/dionaea/var/dionaea/binaries
+    - /opt/dionaea/var/dionaea/log
+    - /opt/dionaea/var/dionaea/bistreams
+
+- name: Make directory owned by nobody user
+  file:
+    path: /var/dionaea
+    owner: nobody
+    group: nogroup
+    recurse: yes
+
+- name: update dionaea configuration
+  replace: "dest=/etc/dionaea/dionaea.conf regexp='{{ item.regexp }}' replace='{{ item.replace }}' backup=yes"
+  with_items:
+## FIXME! not idempotent
+#    - { regexp: 'var/dionaea/', replace: '' }
+#    - { regexp: 'log/', replace: '/var/dionaea/log/' }
+    - { regexp: 'levels = "all"', replace: 'levels = "warning,error"' }
+    - { regexp: 'mode = "getifaddrs"', replace: 'mode = "manual"' }
+    - { regexp: 'addrs = { eth0 = \["::"\] }', replace: 'addrs = { eth0 = ["::", "0.0.0.0"] }' }
+  notify:
+    - supervisor update
+
+- name: set dionaea supervisor config
+  copy: "src=dionaea.conf dest={{ supervisor_confdir }}/dionaea.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+
+

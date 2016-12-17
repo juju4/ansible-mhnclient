@@ -25,23 +25,25 @@
   with_items:
     - python-dev
     - openssl
-    - python-openssl
-    - python-pyasn1
-    - python-twisted
-    - python-crypto
-    - python-gmpy2
-    - python-zope.interface 
+#    - python-openssl
+#    - python-pyasn1
+#    - python-twisted
+#    - python-crypto
+#    - python-gmpy2
+#    - python-zope.interface 
+#    - python-tftpy
     - git
     - ssh
     - python-pip
+    - python-virtualenv
     - supervisor
     - authbind
     - iptables-persistent
-    - python-configparser
+#    - python-configparser
 ## necessary for pip update
     - libmpfr-dev
     - libmpc-dev
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 
 - name: yum | Install cowrie dependencies
@@ -51,20 +53,21 @@
     - openssh-server
     - supervisor
     - python-pip
+    - python-virtualenv
     - python-devel
     - openssl-devel
-    - python-pyasn1
-    - python-twisted-web
-    - python-crypto
-    - python-gmpy2
-    - python-zope.interface 
+#    - python-pyasn1
+#    - python-twisted-web
+#    - python-crypto
+#    - python-gmpy2
+#    - python-zope.interface 
+#    - python-tftpy
     - iptables
 ## FIXME! rpm missing
 #    - python-openssl
 #    - authbind
 #    - iptables-persistent
   when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-
 
 - name: Cowrie | ensure no conflict with main ssh server = could break your config if using Vagrant
   lineinfile:
@@ -82,7 +85,30 @@
   git:
     repo=https://github.com/micheloosterhof/cowrie.git
     dest=/opt/cowrie
+    version="{{ mhnclient_cowrie_version }}"
   when: not cowriedir.stat.exists
+
+- name: fix BUG - /opt/cowrie/env-cowrie/bin/twistd{{ ':' }} Unknown command{{ ':' }} cowrie
+  replace:
+    dest: /opt/cowrie/requirements.txt
+    regexp: '^[Tt]wisted.*'
+    replace: 'twisted==16.3.2'
+    backup: yes
+
+- block:
+    - name: create cowrie initial virtualenv to upgrade
+      pip:
+        name: gmpy2
+        state: present
+        virtualenv: /opt/cowrie/env-cowrie
+    - name: fix BUG - csirtgsdk incompatible with trusty default pip, upgrade it
+      command: "/opt/cowrie/env-cowrie/bin/pip2 install pip -U creates=/opt/cowrie/env-cowrie/lib/python2.7/site-packages/pip-9.0.1.dist-info/METADATA"
+  when: ansible_distribution_release == 'trusty'
+
+- name: install cowrie virtualenv
+  pip:
+    requirements: /opt/cowrie/requirements.txt
+    virtualenv: /opt/cowrie/env-cowrie
 
 - name: create cowrie configuration
   template: src=cowrie.cfg.j2 dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
@@ -93,6 +119,12 @@
     owner: cowrie
     group: users
     recurse: yes
+
+- name: create fake fs
+  command: "/opt/cowrie/bin/createfs.py > /opt/cowrie/data/fs.pickle creates=/opt/cowrie/data/fs.pickle"
+
+#- name: customize accepted/denied user and passwords?
+#   dest: /opt/cowrie/data/userdb.txt
 
 - stat: path=/etc/authbind/byport/22
   register: authbind22
@@ -106,7 +138,7 @@
   when: mhnclient_cowrie_telnet is defined and mhnclient_cowrie_telnet
 
 - name: set cowrie supervisor config
-  template: "src=cowrie.conf dest={{ supervisor_confdir }}/cowrie.{{ supervisor_ext }} mode=0644"
+  template: "src=cowrie.conf.j2 dest={{ supervisor_confdir }}/cowrie.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 

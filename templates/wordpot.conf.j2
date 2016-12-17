@@ -34,7 +34,7 @@ AUTHORS     = ['admin']             # Authors list
 
 HPFEEDS_ENABLED = True
 HPFEEDS_HOST = '{{ HPF_HOST.stdout }}'
-HPFEEDS_PORT = '{{ HPF_PORT }}'
+HPFEEDS_PORT = {{ HPF_PORT }}
 HPFEEDS_IDENT = '{{ HPF_IDENT.stdout }}'
 HPFEEDS_SECRET = '{{ HPF_SECRET.stdout }}'
 HPFEEDS_TOPIC = 'wordpot.events'

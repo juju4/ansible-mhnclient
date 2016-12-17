@@ -27,7 +27,7 @@
     - libpcap-dev
     - libjansson-dev
     - gcc
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install p0f dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -59,10 +59,11 @@
 - name: create p0f user
   user: name="p0f-user" home=/var/empty/p0f shell=/bin/nologin createhome=no system=yes
 
-- file: path=/var/empty/p0f state=directory mode=0755
+- name: check p0f directory permissions
+  file: path=/var/empty/p0f state=directory mode=0755
 
 - name: set p0f supervisor config
-  template: "src=p0f.conf dest={{ supervisor_confdir }}/p0f.{{ supervisor_ext }} mode=0644"
+  template: "src=p0f.conf.j2 dest={{ supervisor_confdir }}/p0f.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 
@@ -70,4 +71,6 @@
 - name: add extra filters to P0f
   replace: dest=/opt/p0f/p0f_wrapper.sh regexp='^FILTER="!(src host ${MY_ADDRESS})"' replace='FILTER="(not src host ${MY_ADDRESS}) and {{ mhnclient_p0f_filters }}"' backup=yes
   when: mhnclient_p0f_filters is defined and mhnclient_p0f_filters != ''
+  notify:
+    - supervisor update
 

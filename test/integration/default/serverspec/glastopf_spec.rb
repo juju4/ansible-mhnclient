@@ -23,3 +23,11 @@ describe port(80), :if => os[:family] == 'ubuntu' && os[:release] == '16.04' do
   it { should be_listening }
 end
 
+describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'mnemosyne\'}).pretty();"') do
+  its(:stdout) { should match /glastopf.events/ }
+  its(:exit_status) { should eq 0 }
+end
+describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'geoloc\'}).pretty();"') do
+  its(:stdout) { should match /glastopf.events/ }
+  its(:exit_status) { should eq 0 }
+end

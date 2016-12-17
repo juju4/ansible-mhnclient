@@ -28,12 +28,13 @@
     - python-pip
     - python-dev
     - libxml2-dev
+    - libxml2-utils
     - libxslt-dev
     - libmysqlclient-dev
     - zlib1g-dev
     - python-virtualenv
     - supervisor
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install conpot dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -44,6 +45,7 @@
     - python-devel
     - python-virtualenv
     - libxml2-devel
+    - libxml2-utils
     - libxslt-devel
     - mariadb-devel
     - zlib-devel
@@ -71,10 +73,28 @@
     - git+https://github.com/glastopf/modbus-tk.git#egg=modbus-tk==0.4
 
 - name: set conpot config
-  template: src=conpot.cfg dest=/opt/conpot/conpot.cfg mode=0644
+  template: src=conpot.cfg.j2 dest=/opt/conpot/conpot.cfg mode=0644
+  notify:
+    - supervisor update
+
+- name: review http template xsd - xml validation
+  replace:
+    dest: "/opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd"
+    regexp: ' type="xs:.*" name="port"'
+    replace: " type=\"xs:unsignedShort\" name=\"port\""
+    backup: yes
+- name: review http template
+  replace:
+    dest: "/opt/conpot/env/src/conpot/conpot/templates/{{ mhnclient_conpot_template }}/http/http.xml"
+    regexp: ' port=".*"'
+    replace: " port=\"{{ mhnclient_conpot_http_port }}\""
+    backup: yes
+    validate: "xmllint --schema /opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd %s"
+  notify:
+    - supervisor update
 
 - name: set conpot supervisor config
-  copy: "src=conpot.conf dest={{ supervisor_confdir }}/conpot.{{ supervisor_ext }} mode=0644"
+  template: "src=conpot.conf.j2 dest={{ supervisor_confdir }}/conpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 

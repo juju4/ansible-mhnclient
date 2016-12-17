@@ -26,7 +26,7 @@
     - python-pip
     - supervisor
     - python-virtualenv
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install shockpot dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -50,10 +50,12 @@
     virtualenv=/opt/shockpot/env
 
 - name: set shockpot config
-  template: src=shockpot.conf dest=/opt/shockpot/shockpot.conf mode=0644 backup=yes
+  template: src=shockpot.conf.j2 dest=/opt/shockpot/shockpot.conf mode=0644 backup=yes
+  notify:
+    - supervisor update
 
 - name: MHN client | shockpot supervisor config
-  template: "src=shockpot.conf dest={{ supervisor_confdir }}/shockpot.{{ supervisor_ext }} mode=0644"
+  copy: "src=shockpot.conf dest={{ supervisor_confdir }}/shockpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 

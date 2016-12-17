@@ -1,0 +1,74 @@
+---
+
+- name: MHN Client | registration
+  include: registration.yml honeypot=mtpot
+- set_fact:
+    deploy: /root/.registration_done-mtpot
+
+- name: retrieve HPF_HOST from server_url
+  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+  register: HPF_HOST
+  changed_when: False
+- set_fact:
+    HPF_PORT: 10000
+- name: retrieve HPF_IDENT from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
+  register: HPF_IDENT
+  changed_when: False
+- name: retrieve HPF_SECRET from registration file
+  shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
+  register: HPF_SECRET
+  changed_when: False
+
+- name: Ubuntu | Install mtpot dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
+
+- name: yum | Install mtpot dependencies
+  yum: name={{item}} state=present update_cache=yes
+  with_items:
+    - git
+    - supervisor
+    - python-pip
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: install pip dependencies
+  pip: name={{ item }} state=present
+  with_items:
+    - telnetsrv
+    - gevent
+
+- stat: path=/opt/mtpot
+  register: mtpotdir
+- name: git clone mtpot
+  git:
+    repo: https://github.com/CymmetriaResearch/MTPot.git
+    dest: /opt/mtpot
+    version: HEAD
+  when: not mtpotdir.stat.exists
+
+## Alternative: ansible module yaml-edit: https://github.com/kwoodson/yedit
+- name: review mtpot.conf - replace
+  replace: "dest=/opt/mtpot/mirai_conf.json regexp='{{ item.regexp }}' replace='{{ item.replace }}' backup=yes"
+  with_items:
+    - { regexp: '"ip": ".*"', replace: '"ip": "0.0.0.0"' }
+    - { regexp: '"port": .*,', replace: "\"port\": {{ mhnclient_mtpot_port }}," }
+    - { regexp: '"syslog_address": ".*"', replace: "\"syslog_address\": \"{{ mhnclient_mtpot_syslog_address }}\"" }
+    - { regexp: '"syslog_port": .*,', replace: "\"syslog_address\": {{ mhnclient_mtpot_syslog_port }}," }
+    - { regexp: '"syslog_protocol": ".*"', replace: "\"syslog_protocol\": \"{{ mhnclient_mtpot_syslog_protocol | upper }}\"" }
+  notify:
+    - supervisor update
+
+## no hpfeeds connector currently
+#- name: set mtpot hpfeeds config
+#  template: src=log-hpfeeds.conf dest=/opt/mtpot/conf/log-hpfeeds.conf mode=0644
+
+- name: set mtpot supervisor config
+  template: "src=mtpot.conf.j2 dest={{ supervisor_confdir }}/mtpot.{{ supervisor_ext }} mode=0644"
+  notify:
+    - supervisor update
+

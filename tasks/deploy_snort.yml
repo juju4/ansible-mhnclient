@@ -58,7 +58,7 @@
     - libev-dev
     - libev4
     - wget
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install snort dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -202,12 +202,12 @@
   file: src=/opt/mhn/rules/mhn.rules path=/opt/snort/rules/local.rules state=link force=yes
 
 - name: MHN client | snort - supervisor config
-  template: "src=snort.conf dest={{ supervisor_confdir }}/snort.{{ supervisor_ext }} mode=0644"
+  template: "src=snort.conf.j2 dest={{ supervisor_confdir }}/snort.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 
 - name: add cron tasks to regularly update snort rules
-  template: src=update_snort_rules.sh dest=/etc/cron.daily/update_snort_rules.sh mode=0755
+  template: src=update_snort_rules.sh.j2 dest=/etc/cron.daily/update_snort_rules.sh mode=0755
 
 ## FIXME! not idempotent, way to do if file /opt/mhn/rules/mhn.rules older than 3600s ?
 - name: MHN client | snort - update rules

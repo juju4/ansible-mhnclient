@@ -1,0 +1,10 @@
+## /etc/supervisor/conf.d/mtpot.conf
+[program:mtpot]
+command=/opt/mtpot/MTPot.py -v -o /var/log/supervisor/mtpot.log /opt/mtpot/mirai_conf.json
+directory=/opt/mtpot
+stdout_logfile=/var/log/supervisor/mtpot.out
+autostart=true
+autorestart=true
+redirect_stderr=true
+stopsignal=QUIT
+

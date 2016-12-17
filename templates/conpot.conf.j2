@@ -1,0 +1,11 @@
+## /etc/supervisor/conf.d/conpot.conf
+[program:conpot]
+command=/opt/conpot/env/bin/conpot --template {{ mhnclient_conpot_template }} -c /opt/conpot/conpot.cfg -l /var/log/supervisor/conpot.log
+directory=/opt/conpot
+stdout_logfile=/var/log/supervisor/conpot.out
+#stderr_logfile=/var/log/supervisor/conpot.err
+autostart=true
+autorestart=true
+redirect_stderr=true
+stopsignal=QUIT
+

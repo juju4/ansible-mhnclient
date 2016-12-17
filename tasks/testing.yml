@@ -1,0 +1,40 @@
+---
+
+## test some honeypots
+- name: install testing packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nmap
+    - curl
+    - sshpass
+
+- name: flush handlers as we need all services up before test
+  meta: flush_handlers
+
+- name: test honeypots
+  shell: "{{ item }}"
+  with_items:
+    - "nmap -A -T5 -oA /root/nmap.log localhost"
+## kippo
+## https://github.com/desaster/kippo/issues/194
+    - "echo \"whoami\\nexit\" | sshpass -p automatedtest ssh -T -oStrictHostKeyChecking=no -oConnectTimeout=10 -p 2220 root@localhost"
+    - "printf \"\\n\\n\\n\\n\\n\\n\\n\\n\" | nc -w3 localhost 2220"
+## cowrie
+    - "echo \"whoami\\nexit\" | sshpass -p automatedtest ssh -T -oStrictHostKeyChecking=no -oConnectTimeout=10 -p 2221 root@localhost"
+#    - "echo \"test\\nwhoami\\nexit\" | ssh -T -oStrictHostKeyChecking=no -oConnectTimeout=10 -p 2221 root@localhost"
+    - "printf \"\\n\\n\\n\\n\\n\\n\\n\\n\" | nc -w3 localhost 2221"
+## glastopf
+    - "curl -v http://localhost:{{ mhnclient_glastopf_port }} | grep '<title>'"
+## conpot
+    - "curl -v http://localhost:{{ mhnclient_conpot_http_port }}"
+## shockpot
+    - "curl -v http://localhost:{{ mhnclient_shockpot_port }} | grep '<h1>It Works!</h1>'"
+## wordpot
+    - "curl -v http://localhost:{{ mhnclient_wordpot_port }} | grep '<title>'"
+  ignore_errors: true
+  register: results
+
+- debug: var=results
+

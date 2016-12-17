@@ -42,7 +42,7 @@
     - name: Ubuntu | Install dionaea - xenial
       fail: msg="honeynet ppa has no xenial built currently."
       when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install dionaea dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -54,9 +54,11 @@
 #    - dionaea
   when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-- template: src=dionaea.hpfeeds.patch dest=/tmp/dionaea.hpfeeds.patch mode=0644
+- name: copy dionaea hpfeeds patch
+  template: src=dionaea.hpfeeds.patch.j2 dest=/tmp/dionaea.hpfeeds.patch mode=0644
 
-- copy: src=hpfeeds.py dest=/usr/lib/dionaea/python/dionaea/hpfeeds.py mode=0755
+- name: add hpfeeds script in dionaea tree
+  copy: src=hpfeeds.py dest=/usr/lib/dionaea/python/dionaea/hpfeeds.py mode=0755
 
 ## remote_src needed else doing from master: fatal: [node1] => input file not found at /tmp/dionaea.hpfeeds.patch or /tmp/dionaea.hpfeeds.patch
 - name: apply patch dionaea.hpfeeds.patch
@@ -67,7 +69,8 @@
     remote_src=True
     backup=yes
 
-- file: "path={{ item }} state=directory mode=0755"
+- name: check permissions for dionaea tree
+  file: "path={{ item }} state=directory mode=0755"
   with_items:
     - /var/dionaea/wwwroot
     - /var/dionaea/binaries
@@ -81,7 +84,8 @@
     group: nogroup
     recurse: yes
 
-- replace: "dest=/etc/dionaea/dionaea.conf regexp='{{ item.regexp }}' replace='{{ item.replace }}' backup=yes"
+- name: update dionaea configuration
+  replace: "dest=/etc/dionaea/dionaea.conf regexp='{{ item.regexp }}' replace='{{ item.replace }}' backup=yes"
   with_items:
 ## FIXME! not idempotent
 #    - { regexp: 'var/dionaea/', replace: '' }
@@ -89,9 +93,11 @@
     - { regexp: 'levels = "all"', replace: 'levels = "warning,error"' }
     - { regexp: 'mode = "getifaddrs"', replace: 'mode = "manual"' }
     - { regexp: 'addrs = { eth0 = \["::"\] }', replace: 'addrs = { eth0 = ["::", "0.0.0.0"] }' }
+  notify:
+    - supervisor update
 
 - name: set dionaea supervisor config
-  copy: "src=dionaea.conf dest={{ supervisor_confdir }}/dionaea.{{ supervisor_ext }} mode=0644"
+  template: "src=dionaea.conf.j2 dest={{ supervisor_confdir }}/dionaea.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 

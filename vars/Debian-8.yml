@@ -1,0 +1,42 @@
+---
+
+nginx_conf: /etc/nginx/sites-available
+supervisor_confdir: /etc/supervisor/conf.d
+supervisor_ext: conf
+supervisor_service: supervisor
+php_dir: php
+php_ini_files:
+  - /etc/php/7.0/fpm/php.ini
+  - /etc/php/7.0/cli/php.ini
+
+mongodb_pkg:
+    - mongodb
+mhnclient_glastopf_pkg:
+    - python2.7
+    - python-openssl
+    - python-gevent
+    - libevent-dev
+    - python2.7-dev
+    - build-essential
+    - make
+    - python-chardet
+    - python-requests
+    - python-sqlalchemy
+    - python-lxml
+    - python-beautifulsoup
+    - python-dev
+    - python-setuptools
+    - git
+    - g++
+    - php
+    - php-dev
+    - liblapack-dev
+    - gfortran
+    - libmysqlclient-dev
+    - libxml2-dev
+    - libxslt-dev
+    - supervisor
+    - python-pip
+## to allow pip update
+    - libmpfr-dev
+

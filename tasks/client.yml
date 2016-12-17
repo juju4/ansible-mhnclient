@@ -43,6 +43,10 @@
 #- debug: msg="Warning: Dionaea uses trusty only ppa and not compatible with others."
 #  when: dionaea is defined and dionaea and ansible_distribution_release != 'trusty'
 
+- name: Install MHN Client - Raspberry Pi Dionaea
+  include: deploy_raspberrypi.yml
+  when: mhnclient_raspberrypi is defined and mhnclient_raspberrypi and ansible_architecture == "armv7l"
+
 - name: Install MHN Client - elastichoney
   include: deploy_elastichoney.yml
   when: mhnclient_elastichoney is defined and mhnclient_elastichoney
@@ -94,4 +98,10 @@
   when: mhnclient_snort is defined and mhnclient_snort
   tags:
     - snort
+
+- name: Install MHN Client - mtpot
+  include: deploy_mtpot.yml
+  when: mhnclient_mtpot is defined and mhnclient_mtpot
+  tags:
+    - mtpot
 

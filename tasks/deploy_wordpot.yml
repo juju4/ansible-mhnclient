@@ -26,7 +26,7 @@
     - supervisor
     - python-pip
     - python-virtualenv
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install wordpot dependencies
   yum: name={{item}} state=present update_cache=yes
@@ -51,7 +51,8 @@
 
 - name: set wordpot config
   template: src=wordpot.conf.j2 dest=/opt/wordpot/wordpot.conf mode=0644 backup=yes
-
+  notify:
+    - supervisor update
 
 - name: MHN client | wordpot supervisor config
   copy: "src=wordpot.conf dest={{ supervisor_confdir }}/wordpot.{{ supervisor_ext }} mode=0644"

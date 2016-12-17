@@ -93,10 +93,12 @@
   file: path=/opt/glastopf state=directory mode=0755
 
 - name: set glastopf configuration
-  template: src=glastopf.cfg dest=/opt/glastopf/glastopf.cfg mode=0644
+  template: src=glastopf.cfg.j2 dest=/opt/glastopf/glastopf.cfg mode=0644
+  notify:
+    - supervisor update
 
 - name: set glastopf supervisor config
-  template: "src=glastopf.conf dest={{ supervisor_confdir }}/glastopf.{{ supervisor_ext }} mode=0644"
+  template: "src=glastopf.conf.j2 dest={{ supervisor_confdir }}/glastopf.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
 
