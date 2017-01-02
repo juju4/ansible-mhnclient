@@ -94,7 +94,7 @@
     - name: "Add iptables forwarding to kippo (iptables_support {{ iptables_support }})"
       template: src=rules.v4.j2 dest=/etc/iptables/rules.v4 mode=0644
       when: iptables_support is defined and iptables_support
-  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "kvm")) and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
+  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")) and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 - name: create kippo configuration
   template: src=kippo.cfg.j2 dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
 

@@ -11,8 +11,9 @@ env:
 #    version: 7
   - distribution: ubuntu
     version: 16.04
-  - distribution: ubuntu
-    version: 14.04
+## travis/trusty mongodb issue (works inside local kitchen test)
+#  - distribution: ubuntu
+#    version: 14.04
 #  - distribution: ubuntu
 #    version: 12.04
 #  - distribution: alpine
