@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/juju4/ansible-mhnclient.svg?branch=master)](https://travis-ci.org/juju4/ansible-mhnclient)
+[![Build Status - Master](https://travis-ci.org/juju4/ansible-mhnclient.svg?branch=master)](https://travis-ci.org/juju4/ansible-mhnclient)
+[![Build Status - Devel](https://travis-ci.org/juju4/ansible-mhnclient.svg?branch=devel)](https://travis-ci.org/juju4/ansible-mhnclient/branches)
 # MHN Clients ansible roles
 
 Ansible role to setup a MHN client.
@@ -94,14 +95,14 @@ Default kitchen config (.kitchen.yml) is lxd-based, while (.kitchen.vagrant.yml)
 
 Once you ensured all necessary roles are present, You can test with:
 ```
-$ cd /path/to/roles/mhn
+$ cd /path/to/roles/juju4.mhn
 $ kitchen verify
 $ kitchen login
 $ KITCHEN_YAML=".kitchen.vagrant.yml" kitchen verify
 ```
 or
 ```
-$ cd /path/to/roles/mhn/test/vagrant
+$ cd /path/to/roles/juju4.mhn/test/vagrant
 $ vagrant up
 $ vagrant ssh
 ```
