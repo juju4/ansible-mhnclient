@@ -47,12 +47,12 @@
     dest=/opt/BFR
   when: not bfrdir.stat.exists
 - name: configure, build and install BFR
-  command: "{{ item }} chdir=/opt/BFR creates=/opt/BFR/modules/bfr.so"
+  command: "{{ item.c }} chdir=/opt/BFR creates={{ item.f }}"
   with_items:
-    - phpize
-    - "./configure --enable-bfr"
-    - make
-    - "make install"
+    - { c: phpize, f: 'configure' }
+    - { c: "./configure --enable-bfr", f: 'Makefile' }
+    - { c: make, f: /opt/BFR/modules/bfr.so }
+    - { c: "make install", f: "/usr/lib/{{ php_dir }}/20151012/bfr.so" }
 
 - name: get bfr.so path
   shell: "find /usr/lib/{{ php_dir }}/ -type f -name bfr.so | awk -F'/' '{print $5}'"
