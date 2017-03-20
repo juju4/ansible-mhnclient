@@ -24,6 +24,9 @@
   tags:
     - always
 
+- include: set-proxy.yml
+  when: mhn_webproxy != ''
+
 - block:
     - include: get-deploy-key.yml
     - set_fact:

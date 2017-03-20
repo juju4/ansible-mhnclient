@@ -1,19 +1,6 @@
 ## /etc/logrotate.d/elastichoney
-/var/log/supervisor/elastichoney.*
-{
-    rotate 31
-    daily
-    missingok
-    create 0644
-    notifempty
-    delaycompress
-    compress
-    postrotate
-        reload supervisor >/dev/null 2>&1 || true
-        setfacl -m "u:nagios:r--" -- $1 >/dev/null 2>&1 || true;
-    endscript
-}
-
+/var/log/supervisor/elastichoney.out
+/var/log/supervisor/elastichoney.err
 /var/log/elastichoney/elastichoney.log
 {
     rotate 31
