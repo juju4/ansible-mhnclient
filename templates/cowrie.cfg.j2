@@ -51,7 +51,7 @@ data_path = data
 contents_path = honeyfs
 
 
-# File in the python pickle format containing the virtual filesystem.
+# File in the Python pickle format containing the virtual filesystem.
 #
 # This includes the filenames, paths, permissions for the Cowrie filesystem,
 # but not the file contents. This is created by the bin/createfs utility from
@@ -82,6 +82,11 @@ txtcmds_path = txtcmds
 # (default: 0)
 #download_limit_size = 10485760
 
+
+# TTY logging will log a transcript of the complete terminal interaction in UML
+# compatible format.
+# (default: true)
+ttylog = true
 
 # Session management interface.
 #
@@ -166,22 +171,31 @@ auth_class = UserDB
 
 
 # ============================================================================
-# SSH Specific Options
+# Historical SSH Specific Options
+# historical options in [honeypot] that have not yet been moved to [ssh]
 # ============================================================================
 
-
-# IP addresses to listen for incoming SSH connections.
-#
-# (default: 0.0.0.0) = any IPv4 address
-#listen_addr = 0.0.0.0
-# (use :: for listen to all IPv6 and IPv4 addresses)
-#listen_addr = ::
+# Source Port to report in logs (useful if you use iptables to forward ports to Cowrie)
+#reported_ssh_port = 22
 
 
-# Port to listen for incoming SSH connections.
-#
-# (default: 2222)
-listen_port = {{ mhnclient_cowrie_ssh_port }}
+
+# ============================================================================
+# SSH Specific Options
+# ============================================================================
+[ssh]
+
+# Enable SSH support
+# (default: true)
+enabled = true
+
+
+# Public and private SSH key files. If these don't exist, they are created
+# automatically.
+rsa_public_key = etc/ssh_host_rsa_key.pub
+rsa_private_key = etc/ssh_host_rsa_key
+dsa_public_key = etc/ssh_host_dsa_key.pub
+dsa_private_key = etc/ssh_host_dsa_key
 
 
 # SSH Version String
@@ -209,47 +223,54 @@ listen_port = {{ mhnclient_cowrie_ssh_port }}
 # SSH-2.0-OpenSSH_5.9
 #
 # (default: "SSH-2.0-SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2")
-#ssh_version_string = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
-ssh_version_string = SSH-2.0-OpenSSH_6.7p1 Ubuntu-5ubuntu1.3
+#version = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
+version = SSH-2.0-OpenSSH_6.7p1 Ubuntu-5ubuntu1.3
 
 
-# Source Port to report in logs (useful if you use iptables to forward ports to Cowrie)
-#reported_ssh_port = 22
+# IP addresses to listen for incoming SSH connections.
+#
+# (default: 0.0.0.0) = any IPv4 address
+#listen_addr = 0.0.0.0
+# (use :: for listen to all IPv6 and IPv4 addresses)
+#listen_addr = ::
 
 
-# Public and private SSH key files. If these don't exist, they are created
-# automatically.
-rsa_public_key = data/ssh_host_rsa_key.pub
-rsa_private_key = data/ssh_host_rsa_key
-dsa_public_key = data/ssh_host_dsa_key.pub
-dsa_private_key = data/ssh_host_dsa_key
+# Port to listen for incoming SSH connections.
+#
+# (default: 2222)
+#listen_port = 2222
+listen_port = {{ mhnclient_cowrie_ssh_port }}
 
 
 # sftp_enabled enables the sftp subsystem
 sftp_enabled = true
 
 
-# SSH forwarding
-# Useful for forwarding protocols to other honeypots
+# Enable SSH direct-tcpip forwarding
+# (default: true)
+forwarding = true
+
 
 # This enables redirecting forwarding requests to another address
-ssh_forward_redirect = false
+# Useful for forwarding protocols to other honeypots
 # (default: false)
+forward_redirect = false
 
+
+# Configure where to forward the data to.
 # forward_redirect_<portnumber> = <redirect ip>:<redirect port>
-forward_redirect_80 = 127.0.0.1:8080
+
+# Redirect http/https
+forward_redirect_80 = 127.0.0.1:8000
 forward_redirect_443 = 127.0.0.1:8443
-# If you want to record SMTP traffic, install SMTP honeypoint.
+
+# To record SMTP traffic, install an SMTP honeypoint.
 # (e.g https://github.com/awhitehatter/mailoney), run
 # python mailoney.py -s yahoo.com -t schizo_open_relay -p 12525
 forward_redirect_25 = 127.0.0.1:12525
 forward_redirect_587 = 127.0.0.1:12525
 
 
-[ssh]
-
-# Enable Telnet support, enabled by default
-enabled = true
 
 # ============================================================================
 # Telnet Specific Options
@@ -274,6 +295,7 @@ listen_port = {{ mhnclient_cowrie_telnet_port }}
 
 # Source Port to report in logs (useful if you use iptables to forward ports to Cowrie)
 #reported_port = 23
+
 
 
 # ============================================================================
@@ -359,8 +381,10 @@ logfile = log/cowrie.json
 
 
 # MySQL logging module
-# Identical functionality as [database_mysql] but with different internals
 # Database structure for this module is supplied in doc/sql/mysql.sql
+#
+# MySQL logging requires extra software: sudo apt-get install libmysqlclient-dev
+# MySQL logging requires an extra Python module: pip install mysql-python
 #
 #[output_mysql]
 #host = localhost
@@ -368,7 +392,17 @@ logfile = log/cowrie.json
 #username = cowrie
 #password = secret
 #port = 3306
+#debug = false
 
+# Rethinkdb output module
+# Rethinkdb output module requires extra Python module: pip install rethinkdb
+
+#[output_rethinkdblog]
+#host = 127.0.0.1
+#port = 28015
+#table = output
+#password =
+#db = cowrie
 
 # SQLite3 logging module
 #
@@ -378,6 +412,14 @@ logfile = log/cowrie.json
 #
 #[output_sqlite]
 #db_file = cowrie.db
+
+# MongoDB logging module
+#
+# MongoDB logging requires an extra Python module: pip install pymongo
+#
+#[output_mongodb]
+#connection_string = mongodb://username:password@host:port/database
+#database = dbname
 
 
 # Splunk SDK output module - Legacy. Requires Splunk API installed
@@ -391,7 +433,7 @@ logfile = log/cowrie.json
 #index = cowrie
 
 
-# Splunk HTTP Event Collector (HEC) output module 
+# Splunk HTTP Event Collector (HEC) output module
 # Sends JSON directly to Splunk over HTTPS
 # mandatory fields: url, token
 # optional fields: index, source, sourcetype, host
@@ -421,3 +463,18 @@ debug=false
 #api_key = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #
 
+#[output_slack]
+# This will produce a _lot_ of messages - you have been warned....
+#channel = channel_that_events_should_be_posted_in
+#token = slack_token_for_your_bot
+##debug=true
+
+
+# https://csirtg.io
+# You must signup for an api key.
+#
+#[output_csirtg]
+#username=wes
+#feed=scanners
+#description=random scanning activity
+#token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
