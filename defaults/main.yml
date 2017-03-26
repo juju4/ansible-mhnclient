@@ -2,6 +2,7 @@
 
 mhn_user: _mhn
 mhn_userdir: /var/_mhn
+mhn_webproxy: ''
 server_url: "https://10.254.254.100:50443"
 ## only use to retrieve deploy key if remote
 #server_inventoryname: 
