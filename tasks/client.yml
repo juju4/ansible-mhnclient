@@ -18,6 +18,13 @@
   apt: update_cache=yes cache_valid_time=3600
   when: multiverse_installed | changed
 
+- name: add logrotate.d configuration
+  copy:
+    src: logrotate-mhnclient
+    dest: /etc/logrotate.d/mhnclient
+    mode: '0644'
+    backup: yes
+
 ## check no issue but not idempotent...
 #- command: 'dpkg --configure -a'
 
