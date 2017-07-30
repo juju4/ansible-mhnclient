@@ -19,6 +19,16 @@
   register: HPF_SECRET
   changed_when: False
 
+- name: Ensure python-pip is present
+  package:
+    name: python-pip
+    state: present
+
+- name: Glastopf | Ensure recent pyopenssl
+  pip:
+    name: pyopenssl
+    state: present
+
 - name: Install glastopf dependencies
   package: name={{item}} state=present
   with_items: "{{ mhnclient_glastopf_pkg + [ mongodb_pkg ] }}"
