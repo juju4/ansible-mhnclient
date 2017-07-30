@@ -12,7 +12,7 @@ mongodb_pkg:
     - mongodb
 mhnclient_glastopf_pkg:
     - python2.7
-    - python-openssl
+#    - python-openssl
     - python-gevent
     - libevent-dev
     - python2.7-dev

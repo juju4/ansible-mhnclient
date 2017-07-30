@@ -83,6 +83,7 @@
     - { n: twisted, v: 15.1.0 }
     - { n: pycrypto, v: 2.6.1 }
     - { n: pyasn1, v: 0.1.9 }
+    - { n: pyopenssl, v: 17.2.0 }
 
 - block:
     - name: Determine if IPTables forwarding is going to work
