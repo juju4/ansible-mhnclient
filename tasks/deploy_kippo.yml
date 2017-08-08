@@ -78,7 +78,12 @@
 ## xenial has twisted 16.0
 ## https://github.com/desaster/kippo/issues/202
 - name: install kippo dependencies in dedicated virtualenv
-  pip: name={{ item.n }} version={{ item.v }} virtualenv=/home/kippo/env-kippo virtualenv_site_packages=yes umask=0022
+  pip:
+    name: "{{ item.n }}"
+    version: "{{ item.v }}"
+    virtualenv: "/home/kippo/env-kippo"
+    virtualenv_site_packages: yes
+    umask: '0022'
   with_items:
     - { n: twisted, v: 15.1.0 }
     - { n: pycrypto, v: 2.6.1 }
