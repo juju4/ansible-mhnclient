@@ -1,0 +1,13 @@
+#!/bin/sh
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+set -e
+
+DAYS={{ cowrie_log_compress_days_limit }}
+DAYS2={{ cowrie_log_purge_days_limit }}
+
+echo "[`date`] Aging off cowrie logs..."
+find /opt/cowrie/log/ -type f -mtime +$DAYS ! -iname '*.bz2' -exec bzip2 {} \;
+find /opt/cowrie/log/ -type f -mtime +$DAYS2 -delete
+echo "[`date`] done"

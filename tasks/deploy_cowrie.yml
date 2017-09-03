@@ -137,9 +137,20 @@
       when: not authbind23.stat.exists
   when: mhnclient_cowrie_telnet is defined and mhnclient_cowrie_telnet
 
+- name: add log cleaning script
+  template:
+    src: cowrie-log-cleaning.sh.j2
+    dest: "{{ scriptsdir }}/cowrie-log-cleaning.sh"
+    mode: '0755'
+    backup: yes
+
+- name: add scheduled task for cowrie logs cleaning
+  cron: name="cowrie-log-cleaning" minute="15" hour="23"
+    job="{{ scriptsdir }}/cowrie-log-cleaning.sh > /tmp/cowrie-log-cleaning.log 2>&1"
+    user=cowrie
+    cron_file=ansible_cowrie-log-cleaning
+
 - name: set cowrie supervisor config
   template: "src=cowrie.conf.j2 dest={{ supervisor_confdir }}/cowrie.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-
-

@@ -39,6 +39,8 @@ mhnclient_cowrie_22redirect: true
 mhnclient_cowrie_telnet: false
 ## Remember, cowrie is not root and cant bind 23 directly
 mhnclient_cowrie_telnet_port: 2223
+cowrie_log_compress_days_limit: 3
+cowrie_log_purge_days_limit: 30
 mhnclient_p0f: false
 #mhnclient_p0f_filters: '(not host X.X.X.X)'
 #TODOraspberry: false
