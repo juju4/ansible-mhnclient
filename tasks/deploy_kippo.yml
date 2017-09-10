@@ -121,9 +121,24 @@
   notify:
     - supervisor update
 
+- name: define daemon to kippo for log cleaning script
+  set_fact:
+    daemon: kippo
+
+- name: add log cleaning script
+  template:
+    src: cowrie-log-cleaning.sh.j2
+    dest: "{{ scriptsdir }}/kippo-log-cleaning.sh"
+    mode: '0755'
+    backup: yes
+
+- name: add scheduled task for kippo logs cleaning
+  cron: name="kippo -log-cleaning" minute="15" hour="23"
+    job="{{ scriptsdir }}/kippo-log-cleaning.sh > /tmp/kippo-log-cleaning.log 2>&1"
+    user=kippo
+    cron_file=ansible_kippo-log-cleaning
+
 - name: set kippo supervisor config
   template: "src=kippo.conf.j2 dest={{ supervisor_confdir }}/kippo.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-
-

@@ -137,6 +137,10 @@
       when: not authbind23.stat.exists
   when: mhnclient_cowrie_telnet is defined and mhnclient_cowrie_telnet
 
+- name: define daemon to cowrie for log cleaning script
+  set_fact:
+    daemon: cowrie
+
 - name: add log cleaning script
   template:
     src: cowrie-log-cleaning.sh.j2
