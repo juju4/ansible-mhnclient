@@ -88,12 +88,12 @@
     version="{{ mhnclient_cowrie_version }}"
   when: not cowriedir.stat.exists
 
-- name: fix BUG - /opt/cowrie/env-cowrie/bin/twistd{{ ':' }} Unknown command{{ ':' }} cowrie
-  replace:
-    dest: /opt/cowrie/requirements.txt
-    regexp: '^[Tt]wisted.*'
-    replace: 'twisted==16.3.2'
-    backup: yes
+#- name: fix BUG - /opt/cowrie/env-cowrie/bin/twistd{{ ':' }} Unknown command{{ ':' }} cowrie
+#  replace:
+#    dest: /opt/cowrie/requirements.txt
+#    regexp: '^[Tt]wisted.*'
+#    replace: 'twisted==16.3.2'
+#    backup: yes
 
 - block:
     - name: create cowrie initial virtualenv to upgrade
@@ -125,6 +125,16 @@
 
 #- name: customize accepted/denied user and passwords?
 #   dest: /opt/cowrie/data/userdb.txt
+
+- name: force cowrie virtualenv path and authbind in start script
+  replace:
+    dest: /opt/cowrie/bin/cowrie
+    regexp: 'activate_venv "cowrie-env"'
+    replace: 'activate_venv "/opt/cowrie/env-cowrie"'
+    backup: yes
+  with_items:
+    - { re: '^AUTHBIND_ENABLED=.*', rep: 'AUTHBIND_ENABLED=yes' }
+    - { re: 'activate_venv "cowrie-env"', rep: 'activate_venv "/opt/cowrie/env-cowrie"' }
 
 - stat: path=/etc/authbind/byport/22
   register: authbind22
