@@ -129,12 +129,13 @@
 - name: force cowrie virtualenv path and authbind in start script
   replace:
     dest: /opt/cowrie/bin/cowrie
-    regexp: 'activate_venv "cowrie-env"'
-    replace: 'activate_venv "/opt/cowrie/env-cowrie"'
+    regexp: "{{ item.re }}"
+    replace: "{{ item.rep }}"
     backup: yes
   with_items:
     - { re: '^AUTHBIND_ENABLED=.*', rep: 'AUTHBIND_ENABLED=yes' }
     - { re: 'activate_venv "cowrie-env"', rep: 'activate_venv "/opt/cowrie/env-cowrie"' }
+    - { re: '^DAEMONIZE=".*"', rep: 'DAEMONIZE="-n"' }
 
 - stat: path=/etc/authbind/byport/22
   register: authbind22
