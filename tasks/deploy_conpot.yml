@@ -77,12 +77,13 @@
   notify:
     - supervisor update
 
-- name: review http template xsd - xml validation
-  replace:
-    dest: "/opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd"
-    regexp: ' type="xs:.*" name="port"'
-    replace: " type=\"xs:unsignedShort\" name=\"port\""
-    backup: yes
+#- name: review http template xsd - xml validation
+#  replace:
+#    dest: "/opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd"
+#    regexp: ' type="xs:.*" name="port"'
+#    replace: " type=\"xs:unsignedShort\" name=\"port\""
+#    backup: yes
+
 - name: review http template
   replace:
     dest: "/opt/conpot/env/src/conpot/conpot/templates/{{ mhnclient_conpot_template }}/http/http.xml"
