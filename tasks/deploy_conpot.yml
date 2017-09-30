@@ -84,15 +84,15 @@
 #    replace: " type=\"xs:unsignedShort\" name=\"port\""
 #    backup: yes
 
-- name: review http template
-  replace:
-    dest: "/opt/conpot/env/src/conpot/conpot/templates/{{ mhnclient_conpot_template }}/http/http.xml"
-    regexp: ' port=".*"'
-    replace: " port=\"{{ mhnclient_conpot_http_port }}\""
-    backup: yes
-    validate: "xmllint --schema /opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd %s"
-  notify:
-    - supervisor update
+#- name: review http template
+#  replace:
+#    dest: "/opt/conpot/env/src/conpot/conpot/templates/{{ mhnclient_conpot_template }}/http/http.xml"
+#    regexp: ' port=".*"'
+#    replace: " port=\"{{ mhnclient_conpot_http_port }}\""
+#    backup: yes
+#    validate: "xmllint --schema /opt/conpot/env/src/conpot/conpot/protocols/http/http.xsd %s"
+#  notify:
+#    - supervisor update
 
 - name: set conpot supervisor config
   template: "src=conpot.conf.j2 dest={{ supervisor_confdir }}/conpot.{{ supervisor_ext }} mode=0644"
