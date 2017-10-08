@@ -30,7 +30,7 @@
 #    - python-twisted
 #    - python-crypto
 #    - python-gmpy2
-#    - python-zope.interface 
+#    - python-zope.interface
 #    - python-tftpy
     - git
     - ssh
@@ -60,7 +60,7 @@
 #    - python-twisted-web
 #    - python-crypto
 #    - python-gmpy2
-#    - python-zope.interface 
+#    - python-zope.interface
 #    - python-tftpy
     - iptables
 ## FIXME! rpm missing

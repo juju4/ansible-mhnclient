@@ -65,7 +65,7 @@
       with_items:
         - 'ulimit -Hn 104854'
         - 'ulimit -n 104854'
-    
+
     - name: increase sysctl file-max limit
       sysctl: name="fs.file-max" value=104854 sysctl_set=yes state=present reload=yes
   when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker"))
