@@ -42,6 +42,11 @@
   tags:
     - always
 
+- name: ensure supervisor package is present
+  package:
+    name: supervisor
+    state: present
+
 - include: client.yml
 
 - name: ensure supervisor service is enabled
