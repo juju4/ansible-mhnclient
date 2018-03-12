@@ -4,7 +4,7 @@ require 'serverspec'
 set :backend, :exec
 
 describe file('/opt/cowrie/log/cowrie.log') do
-  its(:content) { should match /hpclient server name/ }
+#  its(:content) { should match /hpclient server name/ }
   its(:content) { should match /Loaded output engine: hpfeeds/ }
 #  its(:content) { should match /publishing metadata to hpfeeds/ }
   its(:content) { should match /Ready to accept SSH connections/ }
