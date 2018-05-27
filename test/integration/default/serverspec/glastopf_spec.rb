@@ -19,6 +19,11 @@ set :backend, :exec
 #  its(:stdout) { should match /xxx/ }
 #end
 
+describe file('/var/log/supervisor/glastopf.out') do
+  its(:content) { should_not match /Error/ }
+  its(:content) { should_not match /ImportError: No module named/ }
+end
+
 describe port(80), :if => os[:family] == 'ubuntu' && os[:release] == '16.04' do
   it { should be_listening }
 end
