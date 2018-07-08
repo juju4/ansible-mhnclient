@@ -121,7 +121,7 @@
     recurse: yes
 
 - name: create fake fs
-  shell: "/opt/cowrie/bin/createfs.py > /opt/cowrie/data/fs.pickle"
+  shell: "/opt/cowrie/bin/createfs > /opt/cowrie/data/fs.pickle"
   args:
     creates: /opt/cowrie/data/fs.pickle
 
