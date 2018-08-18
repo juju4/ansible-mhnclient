@@ -70,8 +70,13 @@
 #    - setuptools
     - pycrypto
     - git+https://github.com/threatstream/hpfeeds.git#egg=hpfeeds-dev
-    - git+https://github.com/glastopf/conpot.git#egg=conpot-0.5.2
     - git+https://github.com/glastopf/modbus-tk.git#egg=modbus-tk==0.4
+
+- name: Install conpot virtualenv
+  pip:
+    name: conpot
+    version: 0.5.2
+    virtualenv: /opt/conpot/env
 
 - name: set conpot config
   template: src=conpot.cfg.j2 dest=/opt/conpot/conpot.cfg mode=0644
