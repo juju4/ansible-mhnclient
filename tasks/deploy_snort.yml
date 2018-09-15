@@ -19,22 +19,6 @@
   register: HPF_SECRET
   changed_when: False
 
-- block:
-    - name: recover ipaddr of snort interface for HOME_NET
-      shell: "ifconfig {{ if_snort }} | awk -F'[ :]' '/inet addr/ {print $13}'"
-      register: ipaddr
-      changed_when: False
-    - debug: var=ipaddr
-    - debug: var=ipaddr.stdout
-    - name: define HOME_NET from ipaddress attached to if_snort
-      set_fact:
-        HOME_NET: "{{ ipaddr.stdout }}"
-  when: if_snort is defined and if_snort != ''
-- name: define HOME_NET from ansible_default_ipv4.address
-  set_fact:
-    HOME_NET: "{{ ansible_default_ipv4.address }}"
-  when: not (if_snort is defined and if_snort != '') or not (ipaddr is defined and ipaddr.stdout is defined and ipaddr.stdout != '')
-
 - name: Ubuntu | Install snort dependencies
   apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
   with_items:
@@ -58,6 +42,7 @@
     - libev-dev
     - libev4
     - wget
+    - net-tools
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install snort dependencies
@@ -83,6 +68,23 @@
 #    - libdumbnet-dev
 #    - libdaq-dev
   when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- block:
+    - name: recover ipaddr of snort interface for HOME_NET
+      shell: "ifconfig {{ if_snort }} | awk -F'[ :]' '/inet addr/ {print $13}'"
+      register: ipaddr
+      changed_when: False
+    - debug: var=ipaddr
+    - debug: var=ipaddr.stdout
+    - name: define HOME_NET from ipaddress attached to if_snort
+      set_fact:
+        HOME_NET: "{{ ipaddr.stdout }}"
+      when: ipaddr.stdout != ''
+  when: if_snort is defined and if_snort != ''
+- name: define HOME_NET from ansible_default_ipv4.address
+  set_fact:
+    HOME_NET: "{{ ansible_default_ipv4.address }}"
+  when: not (if_snort is defined and if_snort != '') or not (ipaddr is defined and ipaddr.stdout is defined and ipaddr.stdout != '') and ansible_default_ipv4 is defined
 
 ## former is needed if older release present (conpot)
 ## FIXME! ImportError: No module named _markerlib
@@ -130,9 +132,13 @@
     version=hpfeeds-support
   when: not gitsnort.stat.exists
 - name: build snort from threatstream
-  command: "{{ item }} chdir=/opt/snortrepo creates=/opt/snort/bin/snort"
+  command: "{{ item }}"
+  args:
+    chdir: /opt/snortrepo
+    creates: /opt/snort/bin/snort"
   with_items:
     - ./configure --prefix=/opt/snort
+#    - ./configure --prefix=/usr --sysconfdir=/etc/snort --localstatedir=/var/snort
     - make
     - make install
   environment:
@@ -142,6 +148,7 @@
 - name: Ensure directories exist
   file: "path={{ item }} state=directory mode=0755"
   with_items:
+#    - /etc/snort
     - /opt/snort/etc
     - /opt/snort/rules
     - /opt/snort/lib/snort_dynamicrules
@@ -151,15 +158,16 @@
 - stat: path=/opt/snort/etc/snort.conf
   register: snortconf
 - name: create snort config files from snort repo
-  command: "rsync -ci /opt/snortrepo/etc/{{ item }} /opt/snort/etc/{{ item }}"
+  copy:
+    src: "/opt/snortrepo/etc/{{ item }}"
+    dest: "/opt/snort/etc/{{ item }}"
+    remote_src: true
   with_items:
     - snort.conf
     - classification.config
     - reference.config
     - threshold.conf
     - unicode.map
-  register: rsync_result
-  changed_when: 'rsync_result.stdout != ""'
   when: not snortconf.stat.exists
 - name: MHN client | snort - validate configuration permissions
   file: "dest=/opt/snort/etc/{{ item }} mode=0644"
@@ -179,19 +187,43 @@
     - black_list.rules
   when: not wrules.stat.exists
 
-- name: MHN client | snort - configuration
-  replace: "dest=/opt/snort/etc/snort.conf regexp='{{ item.regexp }}' replace='{{ item.replace }}' backup=yes"
+- name: MHN client | snort - base configuration
+  replace:
+    dest: /opt/snort/etc/snort.conf
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+    backup: yes
   with_items:
     - { regexp: '/usr/local', replace: '/opt/snort' }
     - { regexp: '^include \$RULE_PATH/(.*)', replace: '# include $RULE_PATH/\1' }
     - { regexp: '# include $RULE_PATH/local.rules', replace: 'include $RULE_PATH/local.rules' }
-    - { regexp: '^ipvar HOME_NET .*', replace: "ipvar HOME_NET {{ HOME_NET }}" }
+# next are just for config validation from any directory (not from /opt/snort/etc)
+    - { regexp: '^include ([a-z].*)', replace: 'include /opt/snort/etc/\1' }
+    - { regexp: ' unicode.map ', replace: ' /opt/snort/etc/unicode.map ' }
+    - { regexp: ' ../rules', replace: ' /opt/snort/rules' }
+  notify:
+    - supervisor update
+
+- name: MHN client | snort - HOME_NET configuration
+  replace:
+    dest: /opt/snort/etc/snort.conf
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+    backup: yes
+    validate: "/opt/snort/bin/snort -c %s -T"
+  with_items:
+    - { regexp: '^ipvar HOME_NET .*', replace: "ipvar HOME_NET {{ HOME_NET | default('192.168.0.0/16') }}" }
   notify:
     - supervisor update
   when: HOME_NET is defined
 
-- name: MHN client | snort - configuration (2)
-  lineinfile: "dest=/opt/snort/etc/snort.conf regexp='{{ item.regexp }}' line='{{ item.line }}' insertafter='^# hpfeeds'"
+- name: MHN client | snort - hpfeeds configuration
+  lineinfile:
+    dest: /opt/snort/etc/snort.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: "^# hpfeeds"
+    validate: "/opt/snort/bin/snort -c %s -T"
   with_items:
     - { regexp: '^output log_hpfeeds', line: "output log_hpfeeds: host {{ HPF_HOST.stdout }}, ident {{ HPF_IDENT.stdout }}, secret {{ HPF_SECRET.stdout }}, channel snort.alerts, port {{ HPF_PORT }}" }
   when: HPF_SECRET is defined
