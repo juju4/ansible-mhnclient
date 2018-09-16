@@ -9,6 +9,8 @@
   command: sed -n "s/^DEPLOY_KEY = '\(.*\)'/\1/p" /var/_mhn/mhn/server/config.py
   register: deploykey
   changed_when: false
+  args:
+    warn: False
 
 - set_fact:
     deploy_key: "{{ deploykey.stdout }}"
