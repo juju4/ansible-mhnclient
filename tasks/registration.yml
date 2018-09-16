@@ -11,6 +11,8 @@
 ##	'raise ValueError(\"No JSON object could be decoded\")\nValueError: No JSON object could be decoded'
 - name: register honeypot client on server
   shell: "curl {{ curl_arg }} -s -X POST -H \"Content-Type: application/json\" -d '{ \"name\": \"{{ ansible_hostname }}-{{ honeypot }}\", \"hostname\": \"{{ ansible_hostname }}\",  \"deploy_key\": \"{{ deploy_key }}\", \"honeypot\": \"{{ honeypot }}\" }' {{ server_url }}/api/sensor/ > /root/.registration_done-{{ honeypot }}"
+  args:
+    warn: False
   when: not done.stat.exists or done.stat.size == 0
 
 - name: retrieve uuid from registration file
