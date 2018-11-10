@@ -1,4 +1,5 @@
 ---
+# FIXME! switch to python3, https://github.com/urllib3/urllib3/issues/1456
 - name: MHN Client | registration
   include: registration.yml honeypot=glastopf
 - set_fact:
@@ -96,8 +97,9 @@
   register: gtdir
 - name: git clone glastopf
   git:
-    repo=https://github.com/mushorg/glastopf.git
-    dest=/opt/glastopf
+    repo: https://github.com/mushorg/glastopf.git
+    dest: /opt/glastopf
+    version: "{{ glastopf_version | default('HEAD') }}"
   when: not gtdir.stat.exists
 - name: build and install glastopf
   command: "python setup.py install chdir=/opt/glastopf"

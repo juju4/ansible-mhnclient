@@ -41,3 +41,5 @@ mhnclient_glastopf_pkg:
     - libmpfr-dev
 ## testing
     - iproute2
+
+glastopf_version: 3.1.2
