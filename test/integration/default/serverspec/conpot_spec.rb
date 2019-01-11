@@ -3,6 +3,8 @@ require 'serverspec'
 # Required by serverspec
 set :backend, :exec
 
+geoloc_test = false
+
 describe file('/var/log/supervisor/conpot.log') do
   its(:content) { should match /Starting Conpot using template/ }
   its(:content) { should_not match /Error/ }
@@ -19,7 +21,10 @@ describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'mnemosyne
   its(:stdout) { should match /conpot.events/ }
   its(:exit_status) { should eq 0 }
 end
-describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'geoloc\'}).pretty();"') do
-  its(:stdout) { should match /conpot.events/ }
-  its(:exit_status) { should eq 0 }
+
+if geoloc_test
+  describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'geoloc\'}).pretty();"') do
+    its(:stdout) { should match /conpot.events/ }
+    its(:exit_status) { should eq 0 }
+  end
 end

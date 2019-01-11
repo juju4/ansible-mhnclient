@@ -3,6 +3,8 @@ require 'serverspec'
 # Required by serverspec
 set :backend, :exec
 
+geoloc_test = false
+
 describe file('/opt/cowrie/log/cowrie.log') do
 #  its(:content) { should match /hpclient server name/ }
   its(:content) { should match /Loaded output engine: hpfeeds/ }
@@ -17,8 +19,11 @@ describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'mnemosyne
 #  its(:stdout) { should match /cowrie.alerts/ }
   its(:exit_status) { should eq 0 }
 end
-describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'geoloc\'}).pretty();"') do
-  its(:stdout) { should match /cowrie.sessions/ }
-  its(:stdout) { should match /cowrie.alerts/ }
-  its(:exit_status) { should eq 0 }
+
+if geoloc_test
+  describe command('mongo hpfeeds -eval "db.auth_key.find({identifier: \'geoloc\'}).pretty();"') do
+    its(:stdout) { should match /cowrie.sessions/ }
+    its(:stdout) { should match /cowrie.alerts/ }
+    its(:exit_status) { should eq 0 }
+  end
 end
