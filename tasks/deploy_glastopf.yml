@@ -115,9 +115,11 @@
    replace: 'DEFAULT_URL = "https://pypi.python.org'
   when: ansible_distribution_release == 'xenial'
 
+# https://github.com/ansible/ansible/issues/47361#issuecomment-433543182
 - name: install glastop pip requirements
-  pip:
-    requirements: /opt/glastopf/requirements.txt
+#  pip:
+#    requirements: /opt/glastopf/requirements.txt
+  command: pip install -r /opt/glastopf/requirements.txt
 
 - name: build and install glastopf
   command: "python setup.py install chdir=/opt/glastopf"
