@@ -81,10 +81,13 @@
   service: name=apache2 state=stopped enabled=no
   ignore_errors: true
 
-- name: install dependencies with pip
+- name: install greenlet dependencies with pip
   command: "pip install --upgrade greenlet"
+  when: ansible_distribution_release != 'xenial'
+
+- name: install dependencies with pip
+  command: "pip install --upgrade {{ item }}"
   with_items:
-    - greenlet
     - pgen
     - cython
 
