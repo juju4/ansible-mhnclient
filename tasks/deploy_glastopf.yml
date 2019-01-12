@@ -104,6 +104,17 @@
     dest: /opt/glastopf
     version: "{{ glastopf_version | default('HEAD') }}"
   when: not gtdir.stat.exists
+
+# Official = legacy, https://pypi.org/project/distribute/
+# https://github.com/fictorial/pygameui/issues/5
+# https://mail.python.org/pipermail/distutils-sig/2017-October/031712.html
+- name: patch distribute DEFAULT_URL
+  replace:
+   dest: /opt/glastopf/distribute_setup.py
+   regexp: '^DEFAULT_URL = "http://pypi.python.org'
+   replace: 'DEFAULT_URL = "https://pypi.python.org'
+  when: ansible_distribution_release == 'xenial'
+
 - name: build and install glastopf
   command: "python setup.py install chdir=/opt/glastopf"
 
