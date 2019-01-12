@@ -91,9 +91,6 @@
     - pgen
     - cython
 
-- name: uninstall setuptools
-  pip: name=setuptools state=absent
-
 #- name: install glastopf
 #  pip: name=glastopf
 - stat: path=/opt/glastopf
