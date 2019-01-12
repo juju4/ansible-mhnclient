@@ -47,14 +47,6 @@
 #- command: "python setup.py install chdir=/tmp/distribute-0.6.35"
 #  when: not distribute.stat.exists
 
-# Official = legacy, https://pypi.org/project/distribute/
-# https://github.com/fictorial/pygameui/issues/5
-# https://mail.python.org/pipermail/distutils-sig/2017-October/031712.html
-- name: install patched distribute
-  pip:
-   name: git+https://github.com/appacademy/distribute.git@1ef49b863ce03031c1e362aabbd0d58bf48b174c
-  when: ansible_distribution_release == 'xenial'
-
 - name: install hpfeeds from github
   pip: name="git+https://github.com/threatstream/hpfeeds.git#egg=hpfeeds-dev"
 
