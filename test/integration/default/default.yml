@@ -12,7 +12,7 @@
 ## to avoid conflict
     - mhnclient_glastopf_port: 8888
 ## as kippo is changing ssh port used by ansible, automated test is a bit tricky... = not using regular port
-    - mhnclient_kippo: true
+    - mhnclient_kippo: false
     - mhnclient_kippo_ssh_port: 2220
     - mhnclient_kippo_22redirect: false
     - mhnclient_cowrie: true
