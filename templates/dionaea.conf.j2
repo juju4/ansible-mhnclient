@@ -1,4 +1,4 @@
-# {{ ansible_managed }}
+{{ ansible_managed | comment }}
 ## /etc/supervisor/conf.d/dionaea.conf
 [program:dionaea]
 {% if deploy == '/root/.registration_done-raspberrydionaea' %}

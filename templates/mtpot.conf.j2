@@ -1,4 +1,4 @@
-# {{ ansible_managed }}
+{{ ansible_managed | comment }}
 ## /etc/supervisor/conf.d/mtpot.conf
 [program:mtpot]
 command=/opt/mtpot/MTPot.py -v -o /var/log/supervisor/mtpot.log /opt/mtpot/mirai_conf.json

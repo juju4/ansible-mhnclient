@@ -1,4 +1,4 @@
-# {{ ansible_managed }}
+{{ ansible_managed | comment }}
 ## /etc/supervisor/conf.d/conpot.conf
 [program:conpot]
 command=/opt/conpot/env/bin/conpot --template {{ mhnclient_conpot_template }} -c /opt/conpot/conpot.cfg -l /var/log/supervisor/conpot.log
