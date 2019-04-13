@@ -11,8 +11,10 @@ env:
 #    version: 7
   - distribution: ubuntu
     version: 18.04
+    suite: default
   - distribution: ubuntu
     version: 16.04
+    suite: default
 ## travis/trusty mongodb issue (works inside local kitchen test)
 #  - distribution: ubuntu
 #    version: 14.04
@@ -20,6 +22,9 @@ env:
 #    version: 12.04
 #  - distribution: alpine
 #    version: 3.4
+  - distribution: ubuntu
+    version: 18.04
+    suite: default-cowrie
 
 before_install:
   - env
@@ -101,11 +106,11 @@ before_install:
   - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- pwd"
 
 script:
-  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory --syntax-check /etc/ansible/roles/juju4.mhnclient/test/integration/default/default.yml"
-  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory --connection=local --sudo -vvvv /etc/ansible/roles/juju4.mhnclient/test/integration/default/default.yml"
+  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory --syntax-check /etc/ansible/roles/juju4.mhnclient/test/integration/${suite}/default.yml"
+  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory --connection=local --sudo -vvvv /etc/ansible/roles/juju4.mhnclient/test/integration/${suite}/default.yml"
 ## FIXME! Travis request: Build config file had a parse error: "mapping values are not allowed in this context at line 72 column 321".
-#  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory /etc/ansible/roles/juju4.mhnclient/test/integration/default/default.yml --connection=local --sudo | tee /tmp/idempotency.log | grep -q 'changed=0.*failed=0'  && (echo 'Idempotence test: pass' && exit 0) || (echo 'Idempotence test: fail' && cat /tmp/idempotency.log && exit 1)"
-  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- /etc/ansible/roles/juju4.mhnclient/test/integration/default/serverspec/run-local-tests.sh"
+#  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- ansible-playbook -i inventory /etc/ansible/roles/juju4.mhnclient/test/integration/${suite}/default.yml --connection=local --sudo | tee /tmp/idempotency.log | grep -q 'changed=0.*failed=0'  && (echo 'Idempotence test: pass' && exit 0) || (echo 'Idempotence test: fail' && cat /tmp/idempotency.log && exit 1)"
+  - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- /etc/ansible/roles/juju4.mhnclient/test/integration/${suite}/serverspec/run-local-tests.sh"
 
 after_failure:
   - sudo -E su $USER -c "lxc exec run-${distribution}-${version//./} -- cat /var/log/supervisor/cowrie.out"

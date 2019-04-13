@@ -27,4 +27,6 @@ suites:
   - name: default
     run_list:
     attributes:
-
+  - name: default-cowrie
+    run_list:
+    attributes:
