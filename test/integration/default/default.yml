@@ -15,7 +15,7 @@
     - mhnclient_kippo: false
     - mhnclient_kippo_ssh_port: 2220
     - mhnclient_kippo_22redirect: false
-    - mhnclient_cowrie: true
+    - mhnclient_cowrie: false
     - mhnclient_cowrie_ssh_port: 2221
     - mhnclient_cowrie_22redirect: false
     - mhnclient_p0f: true
