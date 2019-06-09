@@ -25,6 +25,9 @@ env:
   - distribution: ubuntu
     version: 18.04
     suite: default-cowrie
+  - distribution: ubuntu
+    version: 18.04
+    suite: default-conpot
 
 before_install:
   - env

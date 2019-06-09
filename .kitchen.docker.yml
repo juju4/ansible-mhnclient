@@ -38,3 +38,6 @@ suites:
   - name: default-cowrie
     run_list:
     attributes:
+  - name: default-conpot
+    run_list:
+    attributes:

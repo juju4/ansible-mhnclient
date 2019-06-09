@@ -4,7 +4,7 @@
   vars:
     - server_url: "https://127.0.0.1:50443"
     - mhnclient_amun: true
-    - mhnclient_conpot: false
+    - mhnclient_conpot: true
     - mhnclient_conpot_http_port: 8889
     - mhnclient_dionaea: true
     - mhnclient_elastichoney: true
