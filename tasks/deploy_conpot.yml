@@ -63,6 +63,12 @@
     virtualenv=/opt/conpot/env
     version=26.1.1
 
+- name: Install conpot virtualenv - rpyc for scapy #622
+  pip:
+    name: rpyc
+    virtualenv: /opt/conpot/env
+    version: 3.4.4
+
 - name: Install conpot virtualenv
   pip: name="{{ item }}"
     virtualenv=/opt/conpot/env
