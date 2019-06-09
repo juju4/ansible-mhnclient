@@ -3,11 +3,11 @@
 - hosts: all
   vars:
     - server_url: "https://127.0.0.1:50443"
-    - mhnclient_amun: true
+    - mhnclient_amun: false
     - mhnclient_conpot: true
     - mhnclient_conpot_http_port: 8889
-    - mhnclient_dionaea: true
-    - mhnclient_elastichoney: true
+    - mhnclient_dionaea: false
+    - mhnclient_elastichoney: false
     - mhnclient_glastopf: false
 ## to avoid conflict
     - mhnclient_glastopf_port: 8888
@@ -18,15 +18,15 @@
     - mhnclient_cowrie: false
     - mhnclient_cowrie_ssh_port: 2221
     - mhnclient_cowrie_22redirect: false
-    - mhnclient_p0f: true
+    - mhnclient_p0f: false
 #    - raspberry: true
-    - mhnclient_shockpot: true
+    - mhnclient_shockpot: false
     - mhnclient_shockpot_port: 8890
-    - mhnclient_snort: true
+    - mhnclient_snort: false
 #    - suricata: true
-    - mhnclient_wordpot: true
+    - mhnclient_wordpot: false
     - mhnclient_wordpot_port: 8891
-    - mhnclient_mtpot: true
+    - mhnclient_mtpot: false
     - mhnclient_mtpot_port: 2323
     - mhnclient_testing: true
   roles:
