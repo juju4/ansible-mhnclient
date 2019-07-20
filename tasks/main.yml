@@ -25,7 +25,7 @@
     - always
 
 - include: set-proxy.yml
-  when: mhn_webproxy != ''
+  when: mhn_webproxy
 
 - block:
     - include: get-deploy-key.yml
@@ -38,7 +38,7 @@
 
 - include: get-deploy-key.yml
   delegate_to: "{{ server_inventoryname }}"
-  when: server_url != "https://127.0.0.1:50443" and server_inventoryname is defined and server_inventoryname != ''
+  when: server_url != "https://127.0.0.1:50443" and server_inventoryname is defined and server_inventoryname
   tags:
     - always
 
@@ -53,4 +53,4 @@
   service: name={{ supervisor_service }} enabled=yes
 
 - include: testing.yml
-  when: mhnclient_testing
+  when: mhnclient_testing|bool

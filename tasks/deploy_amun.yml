@@ -1,14 +1,20 @@
 ---
+
 - name: MHN Client | registration
   include: registration.yml honeypot=amun
 - set_fact:
     deploy: /root/.registration_done-amun
 
-- name: retrieve HPF_HOST from server_url
-  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+- name: Extract HPF_HOST from server_url
+  shell: >
+    set -o pipefail
+    echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
+  args:
+    executable: /bin/bash
   register: HPF_HOST
   changed_when: False
-- set_fact:
+- name: Set fact HPF_PORT
+  set_fact:
     HPF_PORT: 10000
 - name: retrieve HPF_IDENT from registration file
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
@@ -18,22 +24,28 @@
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
   register: HPF_SECRET
   changed_when: False
+  no_log: true
 
 - name: Ubuntu | Install amun dependencies
-  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
-  with_items:
-    - git
-    - supervisor
-    - python-pip
+  apt:
+    name:
+      - git
+      - supervisor
+      - python-pip
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install amun dependencies
-  yum: name={{item}} state=present update_cache=yes
-  with_items:
-    - git
-    - supervisor
-    - python-pip
-  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  yum:
+    name:
+      - git
+      - supervisor
+      - python-pip
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
 
 - stat: path=/opt/amun
   register: amundir
@@ -57,18 +69,22 @@
   notify:
     - supervisor update
 
-- file: path=/opt/amun/hexdumps state=directory mode=0755
+- name: Ensure Amun hexdumps directory exists
+  file: path=/opt/amun/hexdumps state=directory mode=0755
 
 - block:
     - name: increase current ulimit settings
-      shell: "{{ item }}"
+      command: "{{ item }}"
       with_items:
         - 'ulimit -Hn 104854'
         - 'ulimit -n 104854'
 
     - name: increase sysctl file-max limit
       sysctl: name="fs.file-max" value=104854 sysctl_set=yes state=present reload=yes
-  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker"))
+  when: >
+    not (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
+        )
 
 - name: set amun hpfeeds config
   template: src=log-hpfeeds.conf.j2 dest=/opt/amun/conf/log-hpfeeds.conf mode=0644
@@ -79,4 +95,3 @@
   template: "src=amun.conf.j2 dest={{ supervisor_confdir }}/amun.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-

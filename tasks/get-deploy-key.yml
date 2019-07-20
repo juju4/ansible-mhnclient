@@ -11,7 +11,9 @@
   changed_when: false
   args:
     warn: False
+  no_log: true
 
-- set_fact:
+- name: Set fact deploy key
+  set_fact:
     deploy_key: "{{ deploykey.stdout }}"
-
+  no_log: true

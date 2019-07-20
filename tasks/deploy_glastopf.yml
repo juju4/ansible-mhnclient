@@ -1,15 +1,20 @@
 ---
-# FIXME! switch to python3, https://github.com/urllib3/urllib3/issues/1456
+
 - name: MHN Client | registration
   include: registration.yml honeypot=glastopf
 - set_fact:
     deploy: /root/.registration_done-glastopf
 
-- name: retrieve HPF_HOST from server_url
-  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+- name: Extract HPF_HOST from server_url
+  shell: >
+    set -o pipefail
+    echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
+  args:
+    executable: /bin/bash
   register: HPF_HOST
   changed_when: False
-- set_fact:
+- name: Set fact HPF_PORT
+  set_fact:
     HPF_PORT: 10000
 - name: retrieve HPF_IDENT from registration file
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
@@ -19,6 +24,7 @@
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
   register: HPF_SECRET
   changed_when: False
+  no_log: true
 
 - name: Ensure python-pip is present
   package:
@@ -31,8 +37,7 @@
     state: present
 
 - name: Install glastopf dependencies
-  package: name={{item}} state=present
-  with_items: "{{ mhnclient_glastopf_pkg + [ mongodb_pkg ] }}"
+  package: name={{ mhnclient_glastopf_pkg + [ mongodb_pkg ] }} state=present
 
 ### Note: may conflict w release for other modules: contop, snort
 #- stat: path=/usr/local/lib/python2.7/dist-packages/distribute-0.6.35-py2.7.egg
@@ -134,4 +139,3 @@
   template: "src=glastopf.conf.j2 dest={{ supervisor_confdir }}/glastopf.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-

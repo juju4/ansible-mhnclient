@@ -34,4 +34,3 @@ mhnclient_glastopf_pkg:
     - libxslt-devel
 ## FIXME! rpm missing?
 #    - python-openssl
-

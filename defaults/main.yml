@@ -81,4 +81,3 @@ scriptsdir: /usr/local/scripts
 noreboot: true
 
 mhnclient_testing: false
-

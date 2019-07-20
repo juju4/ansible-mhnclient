@@ -1,14 +1,20 @@
 ---
+
 - name: MHN Client | registration
   include: registration.yml honeypot=wordpot
 - set_fact:
     deploy: /root/.registration_done-wordpot
 
-- name: retrieve HPF_HOST from server_url
-  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+- name: Extract HPF_HOST from server_url
+  shell: >
+    set -o pipefail
+    echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
+  args:
+    executable: /bin/bash
   register: HPF_HOST
   changed_when: False
-- set_fact:
+- name: Set fact HPF_PORT
+  set_fact:
     HPF_PORT: 10000
 - name: retrieve HPF_IDENT from registration file
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
@@ -18,9 +24,10 @@
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
   register: HPF_SECRET
   changed_when: False
+  no_log: true
 
 - name: Ubuntu | Install wordpot dependencies
-  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
   with_items:
     - git
     - supervisor
@@ -29,13 +36,13 @@
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install wordpot dependencies
-  yum: name={{item}} state=present update_cache=yes
+  yum: name={{ item }} state=present update_cache=yes
   with_items:
     - git
     - supervisor
     - python-pip
     - python-virtualenv
-  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_os_family == "RedHat"
 
 - stat: path=/opt/wordpot
   register: wordpotdir
@@ -58,5 +65,3 @@
   copy: "src=wordpot.conf dest={{ supervisor_confdir }}/wordpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-
-

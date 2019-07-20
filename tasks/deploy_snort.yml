@@ -1,14 +1,20 @@
 ---
+
 - name: MHN Client | registration
   include: registration.yml honeypot=snort
 - set_fact:
     deploy: /root/.registration_done-snort
 
-- name: retrieve HPF_HOST from server_url
-  shell: "echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'"
+- name: Extract HPF_HOST from server_url
+  shell: >
+    set -o pipefail
+    echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
+  args:
+    executable: /bin/bash
   register: HPF_HOST
   changed_when: False
-- set_fact:
+- name: Set fact HPF_PORT
+  set_fact:
     HPF_PORT: 10000
 - name: retrieve HPF_IDENT from registration file
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"identifier\"]'"
@@ -18,9 +24,10 @@
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
   register: HPF_SECRET
   changed_when: False
+  no_log: true
 
 - name: Ubuntu | Install snort dependencies
-  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
   with_items:
     - git
     - supervisor
@@ -46,7 +53,7 @@
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install snort dependencies
-  yum: name={{item}} state=present update_cache=yes
+  yum: name={{ item }} state=present update_cache=yes
   with_items:
     - git
     - supervisor
@@ -67,7 +74,7 @@
 ## FIXME! missing rpm
 #    - libdumbnet-dev
 #    - libdaq-dev
-  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_os_family == "RedHat"
 
 - block:
     - name: recover ipaddr of snort interface for HOME_NET
@@ -244,4 +251,3 @@
 ## FIXME! not idempotent, way to do if file /opt/mhn/rules/mhn.rules older than 3600s ?
 - name: MHN client | snort - update rules
   command: "/etc/cron.daily/update_snort_rules.sh creates=/opt/mhn/rules/mhn.rules"
-
