@@ -1,3 +1,4 @@
+---
 
 - stat: path=/var/_mhn/mhn/server/config.py
   register: mhnkeyfile

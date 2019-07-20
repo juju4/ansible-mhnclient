@@ -143,5 +143,3 @@
   copy: "src=dionaea.conf dest={{ supervisor_confdir }}/dionaea.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-
-

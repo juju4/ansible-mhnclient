@@ -77,4 +77,3 @@
   template: "src=mtpot.conf.j2 dest={{ supervisor_confdir }}/mtpot.{{ supervisor_ext }} mode=0644"
   notify:
     - supervisor update
-
