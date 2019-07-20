@@ -5,7 +5,7 @@
     deploy: /root/.registration_done-dionaea
 
 - name: Extract HPF_HOST from server_url
-  shell: >
+  shell: |
     set -o pipefail
     echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
   args:
@@ -23,6 +23,7 @@
   shell: "python -c 'import json;obj=json.load(file(\"{{ deploy }}\"));print obj[\"secret\"]'"
   register: HPF_SECRET
   changed_when: False
+  no_log: true
 
 - block:
     - name: apt | Install dionaea dependencies

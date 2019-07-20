@@ -6,7 +6,7 @@
     deploy: /root/.registration_done-conpot
 
 - name: Extract HPF_HOST from server_url
-  shell: >
+  shell: |
     set -o pipefail
     echo {{ server_url }} | sed 's#^http://##; s#^https://##; s#/.*$##; s/:.*$//'
   args:
