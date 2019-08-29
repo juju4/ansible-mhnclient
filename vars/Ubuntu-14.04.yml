@@ -40,3 +40,26 @@ mhnclient_glastopf_pkg:
     - libmpfr-dev
 ## testing
     - iproute2
+
+python_bin: python
+cowrie_deps:
+    - python-dev
+    - openssl
+#    - python-openssl
+#    - python-pyasn1
+#    - python-twisted
+#    - python-crypto
+#    - python-gmpy2
+#    - python-zope.interface
+#    - python-tftpy
+    - git
+    - ssh
+    - python-pip
+    - python-virtualenv
+    - supervisor
+    - authbind
+    - iptables-persistent
+#    - python-configparser
+## necessary for pip update
+    - libmpfr-dev
+    - libmpc-dev

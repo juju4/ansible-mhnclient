@@ -26,53 +26,20 @@
   changed_when: False
 
 - name: Ubuntu | Install cowrie dependencies
-  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
-  with_items:
-    - python-dev
-    - openssl
-#    - python-openssl
-#    - python-pyasn1
-#    - python-twisted
-#    - python-crypto
-#    - python-gmpy2
-#    - python-zope.interface
-#    - python-tftpy
-    - git
-    - ssh
-    - python-pip
-    - python-virtualenv
-    - supervisor
-    - authbind
-    - iptables-persistent
-#    - python-configparser
-## necessary for pip update
-    - libmpfr-dev
-    - libmpc-dev
+  apt:
+    name: "{{ cowrie_deps }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 
 - name: yum | Install cowrie dependencies
-  yum: name={{ item }} state=present update_cache=yes
-  with_items:
-    - git
-    - openssh-server
-    - supervisor
-    - python-pip
-    - python-virtualenv
-    - python-devel
-    - openssl-devel
-#    - python-pyasn1
-#    - python-twisted-web
-#    - python-crypto
-#    - python-gmpy2
-#    - python-zope.interface
-#    - python-tftpy
-    - iptables
-## FIXME! rpm missing
-#    - python-openssl
-#    - authbind
-#    - iptables-persistent
-  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  yum:
+    name: "{{ cowrie_deps }}"
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
 
 - name: Cowrie | ensure no conflict with main ssh server = could break your config if using Vagrant
   lineinfile:
@@ -114,6 +81,7 @@
   pip:
     requirements: /opt/cowrie/requirements.txt
     virtualenv: /opt/cowrie/env-cowrie
+    virtualenv_python: "{{ python_bin }}"
 
 - name: create cowrie configuration
   template: src=cowrie.cfg.j2 dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
