@@ -79,9 +79,12 @@
 
 - name: install cowrie virtualenv
   pip:
-    requirements: /opt/cowrie/requirements.txt
+    requirements: "{{ item }}"
     virtualenv: /opt/cowrie/env-cowrie
     virtualenv_python: "{{ python_bin }}"
+  with_items:
+    - /opt/cowrie/requirements.txt
+    - /opt/cowrie/requirements-output.txt
 
 - name: create cowrie configuration
   template: src=cowrie.cfg.j2 dest=/opt/cowrie/cowrie.cfg mode=0644 backup=yes
