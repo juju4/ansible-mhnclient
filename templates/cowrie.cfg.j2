@@ -824,6 +824,14 @@ epoch_timestamp = false
 # HPFeeds
 #
 [output_hpfeeds]
+enabled = false
+server = {{ HPF_HOST.stdout }}
+port = {{ HPF_PORT }}
+identifier = {{ HPF_IDENT.stdout }}
+secret = {{ HPF_SECRET.stdout }}
+debug=false
+
+[output_hpfeeds3]
 enabled = true
 server = {{ HPF_HOST.stdout }}
 port = {{ HPF_PORT }}
