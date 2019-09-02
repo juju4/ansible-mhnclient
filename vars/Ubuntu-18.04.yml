@@ -64,6 +64,7 @@ cowrie_deps:
 ## necessary for pip update
     - libmpfr-dev
     - libmpc-dev
+    - libsnappy-dev
 # if python3
     - libpython3-dev
     - python3-minimal

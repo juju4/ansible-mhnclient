@@ -66,3 +66,4 @@ cowrie_deps:
 ## necessary for pip update
     - libmpfr-dev
     - libmpc-dev
+    - libsnappy-dev

@@ -55,3 +55,4 @@ cowrie_deps:
 #    - python-openssl
 #    - authbind
 #    - iptables-persistent
+    - libsnappy-devel
