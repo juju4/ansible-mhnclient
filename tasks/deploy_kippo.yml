@@ -68,7 +68,7 @@
     "dest='/etc/ssh/sshd_config' regexp='^Port .*' line='Port {{ real_ssh_port }}' backup=yes"
   notify:
     - restart ssh
-  when: real_ssh_port is defined and real_ssh_port != '' and real_ssh_port != 22
+  when: real_ssh_port is defined and real_ssh_port and real_ssh_port != 22
 
 - name: Ensure kippo user exists
   user: name=kippo shell=/bin/bash group=users home=/home/kippo
@@ -77,9 +77,9 @@
   register: kippodir
 - name: git clone kippo
   git:
-    repo=https://github.com/threatstream/kippo
-    dest=/opt/kippo
-    version="{{ mhnclient_kippo_version }}"
+    repo: https://github.com/threatstream/kippo
+    dest: /opt/kippo
+    version: "{{ mhnclient_kippo_version }}"
   when: not kippodir.stat.exists
 
 ## xenial has twisted 16.0
@@ -107,7 +107,11 @@
     - name: "Add iptables forwarding to kippo (iptables_support {{ iptables_support }})"
       template: src=rules.v4.j2 dest=/etc/iptables/rules.v4 mode=0644
       when: iptables_support is defined and iptables_support
-  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")) and mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
+  when: >
+    not (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
+        ) and
+    mhnclient_kippo_22redirect is defined and mhnclient_kippo_22redirect
 - name: create kippo configuration
   template: src=kippo.cfg.j2 dest=/opt/kippo/kippo.cfg mode=0644 backup=yes
 

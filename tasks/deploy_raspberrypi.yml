@@ -50,40 +50,42 @@
       apt: update_cache=yes
       when: (newrepo is defined and newrepo.changed) or (newrepo2 is defined and newrepo2.changed)
     - name: apt | Install dionaea dependencies
-      apt: name={{item}} state=present force=yes
-      with_items:
-        - python-software-properties
-        - software-properties-common
-        - git
-        - supervisor
-        - patch
-        - libglib2.0-dev
-        - libssl-dev
-        - libcurl4-openssl-dev
-        - libreadline-dev
-        - libsqlite3-dev
-        - libtool
-        - automake
-        - autoconf
-        - build-essential
-        - subversion
-        - git-core
-        - flex
-        - bison
-        - pkg-config
-        - libnl-3-dev
-        - libnl-genl-3-dev
-        - libnl-nf-3-dev
-        - libnl-route-3-dev
-        - liblcfg
-        - libemu
-        - libev
-        - dionaea-python
-        - dionaea-cython
-        - libpcap
-        - udns
-        - dionaea
-        - liblcfg
+      apt:
+        name:
+          - python-software-properties
+          - software-properties-common
+          - git
+          - supervisor
+          - patch
+          - libglib2.0-dev
+          - libssl-dev
+          - libcurl4-openssl-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - libtool
+          - automake
+          - autoconf
+          - build-essential
+          - subversion
+          - git-core
+          - flex
+          - bison
+          - pkg-config
+          - libnl-3-dev
+          - libnl-genl-3-dev
+          - libnl-nf-3-dev
+          - libnl-route-3-dev
+          - liblcfg
+          - libemu
+          - libev
+          - dionaea-python
+          - dionaea-cython
+          - libpcap
+          - udns
+          - dionaea
+          - liblcfg
+        state: present
+        force: yes
 
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 

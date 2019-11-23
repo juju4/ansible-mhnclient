@@ -86,12 +86,15 @@
     - name: define HOME_NET from ipaddress attached to if_snort
       set_fact:
         HOME_NET: "{{ ipaddr.stdout }}"
-      when: ipaddr.stdout != ''
-  when: if_snort is defined and if_snort != ''
+      when: ipaddr.stdout
+  when: if_snort is defined and if_snort
 - name: define HOME_NET from ansible_default_ipv4.address
   set_fact:
     HOME_NET: "{{ ansible_default_ipv4.address }}"
-  when: not (if_snort is defined and if_snort != '') or not (ipaddr is defined and ipaddr.stdout is defined and ipaddr.stdout != '') and ansible_default_ipv4 is defined
+  when: >
+    not (if_snort is defined and if_snort) and
+    not (ipaddr is defined and ipaddr.stdout is defined and ipaddr.stdout) and
+    ansible_default_ipv4 is defined
 
 ## former is needed if older release present (conpot)
 ## FIXME! ImportError: No module named _markerlib
@@ -115,11 +118,17 @@
 
 - block:
     - name: download daq
-      get_url: url=https://www.snort.org/downloads/snort/daq-2.0.6.tar.gz dest=/opt mode=0644 checksum='sha256:b40e1d1273e08aaeaa86e69d4f28d535b7e53bdb3898adf539266b63137be7cb'
+      get_url:
+        url: https://www.snort.org/downloads/snort/daq-2.0.6.tar.gz
+        dest: /opt
+        mode: 0644
+        checksum: 'sha256:b40e1d1273e08aaeaa86e69d4f28d535b7e53bdb3898adf539266b63137be7cb'
     - name: uncompress daq
       unarchive: src=/opt/daq-2.0.6.tar.gz dest=/opt
     - name: build daq library
-      command: "{{ item }} chdir=/opt/daq-2.0.6 creates=/usr/local/lib/libdaq.so"
+      command: "{{ item }}"
+      args:
+        chdir: /opt/daq-2.0.6 creates=/usr/local/lib/libdaq.so
       with_items:
         - ./configure --prefix=/usr/local
         - make
@@ -128,7 +137,7 @@
       lineinfile: dest=/etc/ld.so.conf.d/usr_lib.conf regexp=^/usr/lib line=/usr/lib create=yes
       notify:
         - ldconfig
-  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_os_family == "RedHat"
 
 - stat: path=/opt/snortrepo
   register: gitsnort
@@ -232,7 +241,9 @@
     insertafter: "^# hpfeeds"
     validate: "/opt/snort/bin/snort -c %s -T"
   with_items:
-    - { regexp: '^output log_hpfeeds', line: "output log_hpfeeds: host {{ HPF_HOST.stdout }}, ident {{ HPF_IDENT.stdout }}, secret {{ HPF_SECRET.stdout }}, channel snort.alerts, port {{ HPF_PORT }}" }
+    - { regexp: '^output log_hpfeeds',
+        line: "output log_hpfeeds: host {{ HPF_HOST.stdout }}, ident {{ HPF_IDENT.stdout }}, secret {{ HPF_SECRET.stdout }}, channel snort.alerts, port {{ HPF_PORT }}"
+      }
   when: HPF_SECRET is defined
   notify:
     - supervisor update

@@ -46,7 +46,7 @@
     "dest='/etc/ssh/sshd_config' regexp='^Port 22$' line='Port {{ real_ssh_port }}'"
   notify:
     - restart ssh
-  when: real_ssh_port is defined and real_ssh_port != '' and real_ssh_port != 22
+  when: real_ssh_port is defined and real_ssh_port and real_ssh_port != 22
 
 - name: Ensure cowrie user exists
   user: name=cowrie shell=/bin/bash group=users home=/home/cowrie
@@ -55,9 +55,9 @@
   register: cowriedir
 - name: git clone cowrie
   git:
-    repo=https://github.com/micheloosterhof/cowrie.git
-    dest=/opt/cowrie
-    version="{{ mhnclient_cowrie_version }}"
+    repo: https://github.com/micheloosterhof/cowrie.git
+    dest: /opt/cowrie
+    version: "{{ mhnclient_cowrie_version }}"
   when: not cowriedir.stat.exists
 
 #- name: fix BUG - /opt/cowrie/env-cowrie/bin/twistd{{ ':' }} Unknown command{{ ':' }} cowrie

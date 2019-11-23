@@ -27,24 +27,29 @@
   no_log: true
 
 - name: Ubuntu | Install p0f dependencies
-  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
-  with_items:
-    - git
-    - supervisor
-    - libpcap-dev
-    - libjansson-dev
-    - gcc
+  apt:
+    name:
+      - git
+      - supervisor
+      - libpcap-dev
+      - libjansson-dev
+      - gcc
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Kali'
 
 - name: yum | Install p0f dependencies
-  yum: name={{ item }} state=present update_cache=yes
-  with_items:
-    - git
-    - supervisor
-    - supervisor
-    - libpcap-devel
-    - jansson-devel
-    - "@Development tools"
+  yum:
+    name:
+      - git
+      - supervisor
+      - supervisor
+      - libpcap-devel
+      - jansson-devel
+      - "@Development tools"
+    state: present
+    update_cache: yes
   when: ansible_os_family == "RedHat"
 
 - stat: path=/opt/p0f
@@ -76,7 +81,11 @@
 
 ## https://groups.google.com/forum/#!msg/modern-honey-network/vY0H7cj2vlE/uA0BlrpCBAAJ
 - name: add extra filters to P0f
-  replace: dest=/opt/p0f/p0f_wrapper.sh regexp='^FILTER="!(src host ${MY_ADDRESS})"' replace='FILTER="(not src host ${MY_ADDRESS}) and {{ mhnclient_p0f_filters }}"' backup=yes
-  when: mhnclient_p0f_filters is defined and mhnclient_p0f_filters != ''
+  replace:
+    dest: /opt/p0f/p0f_wrapper.sh
+    regexp: '^FILTER="!(src host ${MY_ADDRESS})"'
+    replace: 'FILTER="(not src host ${MY_ADDRESS}) and {{ mhnclient_p0f_filters }}"'
+    backup: yes
+  when: mhnclient_p0f_filters is defined and mhnclient_p0f_filters
   notify:
     - supervisor update

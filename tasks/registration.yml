@@ -10,7 +10,10 @@
   register: done
 
 - name: Get MHN registration token for service
-  shell: "curl {{ curl_arg }} -s -X POST -H \"Content-Type: application/json\" -d '{ \"name\": \"{{ ansible_hostname }}-{{ honeypot }}\", \"hostname\": \"{{ ansible_hostname }}\",  \"deploy_key\": \"{{ deploy_key }}\", \"honeypot\": \"{{ honeypot }}\" }' {{ server_url }}/api/sensor/ > /root/.registration_done-{{ honeypot }}"
+  shell: >
+    curl {{ curl_arg }} -s -X POST -H "Content-Type: application/json"
+      -d '{ "name": "{{ ansible_hostname }}-{{ honeypot }}", "hostname": "{{ ansible_hostname }}",  "deploy_key": "{{ deploy_key }}", "honeypot": "{{ honeypot }}" }'
+      {{ server_url }}/api/sensor/ > /root/.registration_done-{{ honeypot }}
   args:
     warn: False
   when: not done.stat.exists or done.stat.size == 0

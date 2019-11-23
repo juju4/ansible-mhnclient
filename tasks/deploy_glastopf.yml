@@ -79,7 +79,10 @@
   when: BFR_BUILD_OUTPUT.stdout is not defined or BFR_BUILD_OUTPUT.stdout == ''
 
 - name: ensure php bfr.so is enabled in php.ini
-  lineinfile: "dest={{ item }} regexp='^zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so' line='zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so'"
+  lineinfile:
+    dest: "{{ item }}"
+    regexp: '^zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so'
+    line: 'zend_extension = /usr/lib/{{ php_dir }}/{{ BFR_BUILD_OUTPUT.stdout }}/bfr.so'
   with_items: "{{ php_ini_files }}"
 
 - name: stop/disable apache2 service

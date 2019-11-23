@@ -16,7 +16,7 @@
 
 - name: Ubuntu | update apt cache
   apt: update_cache=yes cache_valid_time=3600
-  when: multiverse_installed | changed
+  when: multiverse_installed is changed
 
 - name: add logrotate.d configuration
   copy:
