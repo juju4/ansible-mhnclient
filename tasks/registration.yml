@@ -10,7 +10,7 @@
   register: done
 
 - name: Get MHN registration token for service
-  shell: >
+  shell: >-
     curl {{ curl_arg }} -s -X POST -H "Content-Type: application/json"
       -d '{ "name": "{{ ansible_hostname }}-{{ honeypot }}", "hostname": "{{ ansible_hostname }}",  "deploy_key": "{{ deploy_key }}", "honeypot": "{{ honeypot }}" }'
       {{ server_url }}/api/sensor/ > /root/.registration_done-{{ honeypot }}
