@@ -32,7 +32,6 @@ For example
 - hosts: mhnserver
   roles:
       - juju4.golang
-      - juju4.maxmind
       - juju4.mhn
 - hosts: mhnclient
   roles:
@@ -40,8 +39,6 @@ For example
 ```
 
 If you use kippo or cowrie, after first execution, you must change ssh port in your inventory file (manual inventory or vagrant .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory) or Vagrantfile (config.ssh.port) else you will have no connection. Eventually, you can override it from ansible command line (-e).
-
-May need to add a Maxmind dependency for honeymap (configured to look into /var/maxmind)
 
 It is recommended to reboot system after the ansible playbook as updates probably includes kernel one and to ensure everything is fine. Playbook can do it but default variable is noreboot true.
 
