@@ -6,20 +6,10 @@ rvm:
 
 env:
 #  - distribution: centos
-#    version: 6
-#  - distribution: centos
 #    version: 7
   - distribution: ubuntu
     version: 18.04
     suite: default
-  - distribution: ubuntu
-    version: 16.04
-    suite: default
-## travis/trusty mongodb issue (works inside local kitchen test)
-#  - distribution: ubuntu
-#    version: 14.04
-#  - distribution: ubuntu
-#    version: 12.04
 #  - distribution: alpine
 #    version: 3.4
   - distribution: ubuntu

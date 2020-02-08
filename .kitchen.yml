@@ -27,8 +27,6 @@ provisioner:
 
 platforms:
   - name: ubuntu-18.04
-  - name: ubuntu-16.04
-  - name: ubuntu-14.04
 #  - name: ubuntu-12.04
 ## issue w mhn server part
 #  - name: centos-7
@@ -38,8 +36,6 @@ platforms:
 #    driver:
 #      config:
 #        security.privileged: true
-#  - name: centos-6
-#  - name: centos-6
 #  - name: alpine-3.4
 
 suites:
